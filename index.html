@@ -176,7 +176,7 @@ document.getElementById('recentPayments').innerHTML=recent.length?recent.map(p=>
 }).join(''):'<tr><td colspan="4" class="empty">لا توجد دفعات مسجلة</td></tr>';
 
 document.getElementById('aptBody').innerHTML=db.apartments.map(a=>
-  `<tr><td>${aptName(a)}</td><td>${fee(a,m)} جنيه</td><td><input aria-label="الاسم" value="${esc(a.name)}" onchange="updateApt('${a.id}','name',this.value)" placeholder="اسم المالك أو الساكن"></td><td><input aria-label="رقم الهاتف" value="${esc(a.phone)}" onchange="updateApt('${a.id}','phone',this.value)" placeholder="رقم الهاتف"></td><td><button class="small" onclick="showAptPage('${a.id}')">كشف الحساب</button></td></tr>`
+  `<tr><td>${aptName(a)}</td><td>${fee(a,m)} جنيه</td><td><input aria-label="الاسم" value="${esc(a.name)}" onchange="updateApt('${a.id}','name',this.value)" placeholder="اسم المالك أو الساكن"></td><td><input aria-label="رقم الهاتف" value="${esc(a.phone)}" onchange="updateApt('${a.id}','phone',this.value)" placeholder="رقم الهاتف"></td><td><button class="small" onclick="showAptPage('${a.id}')">فتح صفحة الشقة</button></td></tr>`
 ).join('');
 
 document.getElementById('expBody').innerHTML=db.expenses.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(e=>
