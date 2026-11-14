@@ -56,6 +56,7 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 <div class="card" style="margin-top:14px"><h3>آخر الدفعات</h3><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الشقة</th><th>المبلغ</th><th>ملاحظات</th></tr></thead><tbody id="recentPayments"></tbody></table></div></div>
 </section>
 <section id="apartments"><div class="card"><h3>بيانات الشقق</h3><p class="muted">21 شقة موزعة على 7 أدوار، ويمكن إضافة اسم المالك أو الساكن ورقم الهاتف.</p><div class="table-wrap"><table><thead><tr><th>الشقة</th><th>الاشتراك الشهري</th><th>اسم المالك / الساكن</th><th>رقم الهاتف</th><th>إجراء</th></tr></thead><tbody id="aptBody"></tbody></table></div></div></section>
+<section id="aptPage"><div class="toolbar"><button id="backToApartments">← العودة إلى الشقق</button><button class="primary" id="aptPagePay">تسجيل دفعة لهذه الشقة</button></div><div class="card"><h2 id="aptPageTitle">حساب الشقة</h2><p class="muted" id="aptPageContact"></p><div class="stats"><div class="card stat"><small>إجمالي المستحق</small><strong id="aptTotalDue">0</strong></div><div class="card stat"><small>إجمالي المدفوع</small><strong id="aptTotalPaid">0</strong></div><div class="card stat"><small>المتبقي</small><strong id="aptTotalDebt">0</strong></div></div></div><div class="card" style="margin-top:14px"><h3>كشف الاشتراكات شهر بشهر</h3><div class="table-wrap"><table><thead><tr><th>الشهر</th><th>الاشتراك</th><th>المدفوع</th><th>المتبقي</th><th>الحالة</th></tr></thead><tbody id="aptPageMonths"></tbody></table></div></div><div class="card" style="margin-top:14px"><h3>سجل دفعات الشقة</h3><div class="table-wrap"><table><thead><tr><th>تاريخ الدفع</th><th>الشهر المحتسب</th><th>المبلغ</th><th>ملاحظات</th></tr></thead><tbody id="aptPagePayments"></tbody></table></div></div></section>
 <section id="expenses"><div class="card"><h3>تسجيل مصروف جديد</h3><div class="toolbar"><div class="field"><label>التاريخ</label><input type="date" id="expDate"></div><div class="field"><label>نوع المصروف</label><select id="expType"><option>كهرباء</option><option>أسانسير</option><option>نظافة</option><option>صيانة</option><option>مياه</option><option>أخرى</option></select></div><div class="field"><label>المبلغ بالجنيه</label><input type="number" id="expAmount" min="0.01" step="0.01" placeholder="المبلغ"></div><div class="field"><label>البيان</label><input id="expNote" placeholder="تفاصيل المصروف"></div><button class="primary" id="addExpense">حفظ المصروف</button></div></div><div class="card" style="margin-top:14px"><h3>سجل المصروفات</h3><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>النوع</th><th>البيان</th><th>المبلغ</th><th>إجراء</th></tr></thead><tbody id="expBody"></tbody></table></div></div></section>
 <section id="reports">
 <div class="grid2">
@@ -175,7 +176,7 @@ document.getElementById('recentPayments').innerHTML=recent.length?recent.map(p=>
 }).join(''):'<tr><td colspan="4" class="empty">لا توجد دفعات مسجلة</td></tr>';
 
 document.getElementById('aptBody').innerHTML=db.apartments.map(a=>
-  `<tr><td>${aptName(a)}</td><td>${fee(a,m)} جنيه</td><td><input aria-label="الاسم" value="${esc(a.name)}" onchange="updateApt('${a.id}','name',this.value)" placeholder="اسم المالك أو الساكن"></td><td><input aria-label="رقم الهاتف" value="${esc(a.phone)}" onchange="updateApt('${a.id}','phone',this.value)" placeholder="رقم الهاتف"></td><td><button class="small" onclick="showAptLedger('${a.id}')">كشف الحساب</button></td></tr>`
+  `<tr><td>${aptName(a)}</td><td>${fee(a,m)} جنيه</td><td><input aria-label="الاسم" value="${esc(a.name)}" onchange="updateApt('${a.id}','name',this.value)" placeholder="اسم المالك أو الساكن"></td><td><input aria-label="رقم الهاتف" value="${esc(a.phone)}" onchange="updateApt('${a.id}','phone',this.value)" placeholder="رقم الهاتف"></td><td><button class="small" onclick="showAptPage('${a.id}')">كشف الحساب</button></td></tr>`
 ).join('');
 
 document.getElementById('expBody').innerHTML=db.expenses.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(e=>
@@ -247,18 +248,34 @@ document.getElementById('modalTitle').textContent='تسجيل دفعة — '+apt
 document.getElementById('modalContent').innerHTML=`<div class="field"><label>المبلغ بالجنيه</label><input type="number" id="payAmount" min="0.01" step="0.01" placeholder="المبلغ"></div><div class="field" style="margin-top:10px"><label>تاريخ الدفع</label><input type="date" id="payDate" value="${localDate()}"></div><div class="field" style="margin-top:10px"><label>ملاحظات / رقم الإيصال</label><input id="payNote" placeholder="اختياري"></div><p class="muted">المديونية الحالية: ${money(debtFor(id))} جنيه. سيتم توزيع الدفعة على أقدم المستحقات أولاً.</p>`;
 document.getElementById('modal').classList.add('open');
 }
+document.getElementById('backToApartments').onclick=()=>{document.querySelectorAll('section').forEach(x=>x.classList.toggle('active',x.id==='apartments'));document.querySelectorAll('.tab[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab==='apartments'));};
+document.getElementById('aptPagePay').onclick=()=>{if(currentApt)openPay(currentApt)};
 document.getElementById('modalSave').onclick=()=>{
 const amount=Number(document.getElementById('payAmount').value),date=document.getElementById('payDate').value,note=document.getElementById('payNote').value;
 if(!(amount>0)||!date){alert('من فضلك أدخل مبلغاً وتاريخاً صحيحين');return}
 allocate(currentApt,amount,date,note);
-document.getElementById('modal').classList.remove('open');save();
+document.getElementById('modal').classList.remove('open');save();if(document.getElementById('aptPage').classList.contains('active'))renderAptPage(currentApt);
 };
 document.getElementById('modalCancel').onclick=()=>document.getElementById('modal').classList.remove('open');
-function showAptLedger(id){
-const a=db.apartments.find(a=>a.id===id);
-const cs=db.charges.filter(c=>c.apt===id).sort((x,y)=>x.month.localeCompare(y.month));
-const lines=cs.map(c=>`${c.month}: مستحق ${money(c.amount)} — مدفوع ${money(paidFor(id,c.month))} — متبقي ${money(c.amount-paidFor(id,c.month))}`).join('\n');
-alert(`${aptName(a)}\n${a.name||'بدون اسم'}\n\n${lines||'لا توجد مستحقات مسجلة'}\n\nإجمالي المديونية: ${money(debtFor(id))} جنيه`);
+function showAptPage(id){
+currentApt=id;
+document.querySelectorAll('section').forEach(x=>x.classList.toggle('active',x.id==='aptPage'));
+document.querySelectorAll('.tab[data-tab]').forEach(x=>x.classList.remove('active'));
+renderAptPage(id);
+}
+function renderAptPage(id){
+const a=db.apartments.find(x=>x.id===id);if(!a)return;
+const totalDue=db.charges.filter(c=>c.apt===id).reduce((s,c)=>s+(Number(c.amount)||0),0);
+const totalPaid=db.payments.filter(p=>p.apt===id).reduce((s,p)=>s+(Number(p.amount)||0),0);
+document.getElementById('aptPageTitle').textContent=aptName(a)+(a.name?' — '+a.name:'');
+document.getElementById('aptPageContact').textContent='رقم الهاتف: '+(a.phone||'غير مسجل');
+document.getElementById('aptTotalDue').textContent=money(totalDue)+' ج.م';
+document.getElementById('aptTotalPaid').textContent=money(totalPaid)+' ج.م';
+document.getElementById('aptTotalDebt').textContent=money(totalDue-totalPaid)+' ج.م';
+const months=[...new Set([...db.charges.filter(c=>c.apt===id).map(c=>c.month),...db.payments.filter(p=>p.apt===id).map(p=>p.month)])].sort();
+document.getElementById('aptPageMonths').innerHTML=months.length?months.map(m=>{const due=dueFor(id,m),paid=paidFor(id,m),remaining=due-paid;const status=due===0?'دفعة مقدمة':remaining<=0?'مسدد':paid>0?'جزئي':'لم يسدد';return '<tr><td>'+esc(m)+'</td><td>'+money(due)+'</td><td>'+money(paid)+'</td><td>'+money(remaining)+'</td><td>'+status+'</td></tr>';}).join(''):'<tr><td colspan="5" class="empty">لا توجد اشتراكات أو دفعات مسجلة لهذه الشقة</td></tr>';
+const pays=db.payments.filter(p=>p.apt===id).slice().sort((x,y)=>(y.date||'').localeCompare(x.date||'')||(y.month||'').localeCompare(x.month||''));
+document.getElementById('aptPagePayments').innerHTML=pays.length?pays.map(p=>'<tr><td>'+esc(p.date||'غير محدد')+'</td><td>'+esc(p.month||'')+'</td><td>'+money(p.amount)+'</td><td>'+esc(p.note||'—')+'</td></tr>').join(''):'<tr><td colspan="4" class="empty">لا توجد دفعات مسجلة</td></tr>';
 }
 function deleteExpense(id){if(confirm('هل تريد حذف هذا المصروف؟')){db.expenses=db.expenses.filter(e=>e.id!==id);save()}}
 
