@@ -49,7 +49,7 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 </nav>
 <section id="dues" class="active">
 <div class="card">
-  <div class="toolbar"><div class="field"><label>الشهر</label><input type="month" id="month"></div><button class="primary" id="makeDues">إنشاء مستحقات الشهر</button><button id="allMonths">عرض كل المديونيات</button></div>
+  <div class="toolbar"><div class="field"><label>الشهر</label><input type="month" id="month"></div><button class="primary" id="makeDues">إنشاء مستحقات الشهر</button><button id="makeThroughOctober">إنشاء اشتراكات يناير إلى أكتوبر 2026</button><button id="allMonths">عرض كل المديونيات</button></div>
   <div class="notice">من يناير إلى يونيو 2026: الدور الأول 200 جنيه وباقي الأدوار 250 جنيه. من يوليو 2026 وما بعده: الدور الأول 250 جنيه وباقي الأدوار 300 جنيه. الدفعات تُخصم من أقدم شهر مستحق أولاً.</div>
   <div class="table-wrap"><table><thead><tr><th>الشقة</th><th>الاشتراك</th><th>مدفوع هذا الشهر</th><th>المتبقي</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="duesBody"></tbody></table></div>
 </div>
@@ -226,6 +226,7 @@ const t=db.charges.length?db.charges.slice().sort((a,b)=>a.month.localeCompare(b
 }).join('\n'):'لم يتم إنشاء مستحقات بعد';
 alert(t);
 };
+document.getElementById('makeThroughOctober').onclick=()=>{let made=0;for(let month=1;month<=10;month++){const m='2026-'+String(month).padStart(2,'0');made+=ensureMonth(m);}save();alert(made?'تم إنشاء '+made+' اشتراكاً للشهور الناقصة من يناير إلى أكتوبر 2026، دون تكرار الموجود أو تغيير الدفعات.':'اشتراكات يناير إلى أكتوبر 2026 موجودة بالفعل.');};
 document.getElementById('month').onchange=render;
 document.getElementById('expDate').value=localDate();
 document.getElementById('addExpense').onclick=()=>{
