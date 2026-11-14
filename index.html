@@ -45,7 +45,7 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 <div class="card stat"><small>إجمالي المصروفات</small><strong id="sExpense">0 ج.م</strong></div>
 </div>
 <nav>
-<button class="tab active" data-tab="dues">الاشتراكات والتحصيل</button><button class="tab" data-tab="apartments">الشقق والسكان</button><button class="tab" data-tab="expenses">المصروفات</button><button class="tab" data-tab="reports">التقارير</button><button class="tab" data-tab="backup">النسخ الاحتياطي</button>
+<button class="tab active" data-tab="dues">الاشتراكات والتحصيل</button><button class="tab" data-tab="apartments">الشقق والسكان</button><button class="tab" data-tab="expenses">المصروفات</button><button class="tab" data-tab="reports">التقارير</button><button class="tab" data-tab="backup">النسخ الاحتياطي</button><button class="tab" data-tab="manage">إدارة التعديلات</button>
 </nav>
 <section id="dues" class="active">
 <div class="card">
@@ -63,6 +63,11 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
   <div class="card"><h3>ملخص الاشتراكات</h3><p>من يناير إلى يونيو 2026: الدور الأول 600 جنيه شهرياً، وباقي الأدوار 4,500 جنيه، والإجمالي 5,100 جنيه.</p><p>من يوليو 2026 وما بعده: الدور الأول 750 جنيه شهرياً، وباقي الأدوار 5,400 جنيه، والإجمالي 6,150 جنيه.</p><button onclick="window.print()">طباعة التقرير</button></div>
 </div>
 <div class="card" style="margin-top:14px"><h3>المديونيات حسب الشقة</h3><div class="table-wrap"><table><thead><tr><th>الشقة</th><th>إجمالي المستحق</th><th>إجمالي المدفوع</th><th>المديونية</th></tr></thead><tbody id="debtBody"></tbody></table></div></div>
+</section>
+<section id="manage">
+<div class="card"><h3>إدارة الدفعات</h3><p class="muted">يمكن تعديل أو حذف أي حركة دفع مسجلة. التعديل يخص السجل المحدد فقط.</p><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الشقة</th><th>الشهر المحتسب</th><th>المبلغ</th><th>ملاحظات</th><th>إجراء</th></tr></thead><tbody id="managePayments"></tbody></table></div></div>
+<div class="card" style="margin-top:14px"><h3>إدارة الاشتراكات الشهرية</h3><p class="muted">يمكن تعديل قيمة الاشتراك أو حذف سجل الشهر إذا لم توجد عليه دفعات.</p><div class="table-wrap"><table><thead><tr><th>الشهر</th><th>الشقة</th><th>المبلغ</th><th>المدفوع</th><th>إجراء</th></tr></thead><tbody id="manageCharges"></tbody></table></div></div>
+<div class="card" style="margin-top:14px"><h3>إدارة المصروفات</h3><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>النوع</th><th>البيان</th><th>المبلغ</th><th>إجراء</th></tr></thead><tbody id="manageExpenses"></tbody></table></div></div>
 </section>
 <section id="backup"><div class="card"><h3>حفظ واسترجاع البيانات</h3><p class="muted">بيانات البرنامج محفوظة على نفس الجهاز والمتصفح. احتفظ بنسخة احتياطية دورياً، خصوصاً قبل تغيير الهاتف أو المتصفح.</p><div class="toolbar"><button class="primary" id="exportBtn">تنزيل نسخة احتياطية</button><div class="field"><label>استرجاع نسخة سابقة</label><input type="file" id="importFile" accept="application/json"></div></div><button class="tab danger" id="resetBtn">مسح كل البيانات</button></div></section>
 <div class="footer">نسخة أولية تعمل على جهازك — لا تشارك بياناتها تلقائياً بين أكثر من هاتف.</div>
@@ -185,7 +190,55 @@ document.getElementById('debtBody').innerHTML=db.apartments.map(a=>{
   const p=db.payments.filter(p=>p.apt===a.id).reduce((s,p)=>s+(Number(p.amount)||0),0);
   return `<tr><td>${aptName(a)}</td><td>${money(due)}</td><td>${money(p)}</td><td>${money(due-p)}</td></tr>`;
 }).join('');
+  renderManagement();
 }
+
+function renderManagement(){
+ const aptLabel=id=>{const a=db.apartments.find(x=>x.id===id);return a?aptName(a):String(id)};
+ const pays=[...db.payments].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ document.getElementById('managePayments').innerHTML=pays.map(p=>`<tr><td>${esc(p.date||'')}</td><td>${esc(aptLabel(p.apt))}</td><td>${esc(p.month||'')}</td><td>${money(p.amount)}</td><td>${esc(p.note||'—')}</td><td><div class="row-actions"><button class="small" onclick="editPayment('${p.id}')">تعديل</button><button class="small danger-text" onclick="deletePayment('${p.id}')">حذف</button></div></td></tr>`).join('')||'<tr><td colspan="6" class="empty">لا توجد دفعات</td></tr>';
+ const charges=[...db.charges].sort((a,b)=>b.month.localeCompare(a.month)||String(a.apt).localeCompare(String(b.apt)));
+ document.getElementById('manageCharges').innerHTML=charges.map(ch=>`<tr><td>${esc(ch.month)}</td><td>${esc(aptLabel(ch.apt))}</td><td>${money(ch.amount)}</td><td>${money(paidFor(ch.apt,ch.month))}</td><td><div class="row-actions"><button class="small" onclick="editCharge('${ch.id}')">تعديل</button><button class="small danger-text" onclick="deleteCharge('${ch.id}')">حذف</button></div></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد اشتراكات مسجلة</td></tr>';
+ const expenses=[...db.expenses].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ document.getElementById('manageExpenses').innerHTML=expenses.map(e=>`<tr><td>${esc(e.date||'')}</td><td>${esc(e.type||'')}</td><td>${esc(e.note||'—')}</td><td>${money(e.amount)}</td><td><div class="row-actions"><button class="small" onclick="editExpense('${e.id}')">تعديل</button><button class="small danger-text" onclick="deleteExpense('${e.id}')">حذف</button></div></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد مصروفات</td></tr>';
+}
+function editPayment(id){
+ const p=db.payments.find(x=>x.id===id);if(!p)return;
+ const amount=prompt('المبلغ الجديد:',String(p.amount));if(amount===null)return;
+ const n=Number(amount);if(!(n>0)){alert('أدخل مبلغاً صحيحاً أكبر من صفر');return}
+ const date=prompt('تاريخ الدفع (YYYY-MM-DD):',p.date||localDate());if(date===null)return;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){alert('صيغة التاريخ غير صحيحة');return}
+ const note=prompt('الملاحظات:',p.note||'');if(note===null)return;
+ p.amount=n;p.date=date;p.note=note;save();
+}
+function deletePayment(id){
+ const p=db.payments.find(x=>x.id===id);if(!p)return;
+ if(!confirm('تأكيد حذف دفعة '+money(p.amount)+' جنيه للشهر '+p.month+'؟'))return;
+ db.payments=db.payments.filter(x=>x.id!==id);save();
+}
+function editExpense(id){
+ const e=db.expenses.find(x=>x.id===id);if(!e)return;
+ const amount=prompt('المبلغ الجديد:',String(e.amount));if(amount===null)return;
+ const n=Number(amount);if(!(n>0)){alert('أدخل مبلغاً صحيحاً أكبر من صفر');return}
+ const date=prompt('التاريخ (YYYY-MM-DD):',e.date||localDate());if(date===null)return;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){alert('صيغة التاريخ غير صحيحة');return}
+ const type=prompt('نوع المصروف:',e.type||'أخرى');if(type===null)return;
+ const note=prompt('البيان:',e.note||'');if(note===null)return;
+ e.amount=n;e.date=date;e.type=type;e.note=note;save();
+}
+function editCharge(id){
+ const ch=db.charges.find(x=>x.id===id);if(!ch)return;
+ const amount=prompt('قيمة الاشتراك الجديدة بالجنيه:',String(ch.amount));if(amount===null)return;
+ const n=Number(amount);if(!(n>=0)){alert('أدخل مبلغاً صحيحاً');return}
+ ch.amount=n;save();
+}
+function deleteCharge(id){
+ const ch=db.charges.find(x=>x.id===id);if(!ch)return;
+ if(paidFor(ch.apt,ch.month)>0){alert('لا يمكن حذف هذا الاشتراك لوجود دفعات مرتبطة به. عدّل قيمته بدلاً من حذفه.');return}
+ if(!confirm('تأكيد حذف اشتراك '+ch.month+'؟'))return;
+ db.charges=db.charges.filter(x=>x.id!==id);save();
+}
+
 function updateApt(id,k,v){const a=db.apartments.find(a=>a.id===id);if(!a)return;a[k]=v;localStorage.setItem(KEY,JSON.stringify(db))}
 function openPay(id){
 currentApt=id;const a=db.apartments.find(a=>a.id===id);
