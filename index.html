@@ -33,6 +33,8 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 .modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:15px;z-index:4}
 .modal.open{display:flex}.dialog{background:white;border-radius:16px;padding:20px;width:min(440px,100%);max-height:90vh;overflow:auto}
 .dialog h3{margin-top:0}.dialog-actions{display:flex;gap:8px;margin-top:14px}.dialog-actions button{flex:1}
+.receipt-paper{border:1px dashed #9aaba4;border-radius:12px;padding:18px;background:#fff;color:#18332e}.receipt-paper h2{text-align:center;margin:0 0 5px}.receipt-paper .receipt-sub{text-align:center;color:#64756f;margin:0 0 16px}.receipt-paper table{min-width:0;width:100%}.receipt-paper td,.receipt-paper th{font-size:13px;padding:8px 4px}.receipt-total{font-size:20px;font-weight:800;text-align:center;margin:15px 0 4px;color:#176b52}
+@media print{body *{visibility:hidden!important}#receiptModal,#receiptModal *{visibility:visible!important}#receiptModal{display:block!important;position:absolute;inset:0;background:#fff;padding:0}#receiptModal .dialog{width:100%;max-width:none;max-height:none;box-shadow:none;border:0;padding:0}#receiptModal .no-print{display:none!important}.receipt-paper{border:0}}
 @media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}header h1{font-size:22px}.wrap{margin-top:12px}.card{padding:13px}}
 </style></head>
 <body>
@@ -75,6 +77,7 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 <div class="footer">نسخة أولية تعمل على جهازك — لا تشارك بياناتها تلقائياً بين أكثر من هاتف.</div>
 </div>
 <div class="modal" id="modal"><div class="dialog"><h3 id="modalTitle">تسجيل دفعة</h3><div id="modalContent"></div><div class="dialog-actions"><button class="primary" id="modalSave">حفظ</button><button id="modalCancel">إلغاء</button></div></div></div>
+<div class="modal" id="receiptModal"><div class="dialog"><div id="receiptContent"></div><div class="dialog-actions no-print"><button class="primary" id="receiptWhatsApp">إرسال واتساب</button><button id="receiptPrint">طباعة الإيصال</button><button id="receiptClose">إغلاق</button></div></div></div>
 <script>
 'use strict';
 const KEY='buildingAccountsV1';
@@ -132,20 +135,22 @@ function dueFor(apt,month){return db.charges.filter(c=>c.apt===apt&&c.month===mo
 function debtFor(apt){return db.charges.filter(c=>c.apt===apt).reduce((s,c)=>s+(Number(c.amount)||0),0)-db.payments.filter(p=>p.apt===apt).reduce((s,p)=>s+(Number(p.amount)||0),0)}
 function allocate(apt,amount,date,note){
 let left=amount;
+const receiptNo='REC-'+date.replace(/-/g,'')+'-'+makeId().slice(-6).toUpperCase();
 const open=db.charges.filter(c=>c.apt===apt).sort((a,b)=>a.month.localeCompare(b.month));
 for(const c of open){
   const rem=(Number(c.amount)||0)-paidFor(apt,c.month);
   if(rem<=0)continue;
   const take=Math.min(left,rem);
-  if(take>0){db.payments.push({id:makeId(),apt,month:c.month,amount:take,date,note});left-=take}
+  if(take>0){db.payments.push({id:makeId(),apt,month:c.month,amount:take,date,note,receiptNo});left-=take}
   if(left<=0)break;
 }
 if(left>0){
   const m=date.slice(0,7);
   let c=db.charges.find(c=>c.apt===apt&&c.month===m);
   if(!c){c={id:`${m}_${apt}`,apt,month:m,amount:0};db.charges.push(c)}
-  db.payments.push({id:makeId(),apt,month:m,amount:left,date,note:note||'دفعة مقدمة'});
+  db.payments.push({id:makeId(),apt,month:m,amount:left,date,note:note||'دفعة مقدمة',receiptNo});
 }
+return receiptNo;
 }
 function makeId(){return (crypto&&crypto.randomUUID)?crypto.randomUUID():`${Date.now()}_${Math.random().toString(16).slice(2)}`}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -254,8 +259,8 @@ document.getElementById('aptPageNotes').oninput=e=>{const a=db.apartments.find(x
 document.getElementById('modalSave').onclick=()=>{
 const amount=Number(document.getElementById('payAmount').value),date=document.getElementById('payDate').value,note=document.getElementById('payNote').value;
 if(!(amount>0)||!date){alert('من فضلك أدخل مبلغاً وتاريخاً صحيحين');return}
-allocate(currentApt,amount,date,note);
-document.getElementById('modal').classList.remove('open');save();if(document.getElementById('aptPage').classList.contains('active'))renderAptPage(currentApt);
+const receiptNo=allocate(currentApt,amount,date,note);
+document.getElementById('modal').classList.remove('open');save();if(document.getElementById('aptPage').classList.contains('active'))renderAptPage(currentApt);openReceipt(receiptNo);
 };
 document.getElementById('modalCancel').onclick=()=>document.getElementById('modal').classList.remove('open');
 function showAptPage(id){
@@ -264,6 +269,35 @@ document.querySelectorAll('section').forEach(x=>x.classList.toggle('active',x.id
 document.querySelectorAll('.tab[data-tab]').forEach(x=>x.classList.remove('active'));
 renderAptPage(id);
 }
+function receiptData(receiptNo){
+const pays=db.payments.filter(p=>p.receiptNo===receiptNo);
+if(!pays.length)return null;
+const a=db.apartments.find(x=>x.id===pays[0].apt);
+return {pays,a,total:pays.reduce((s,p)=>s+(Number(p.amount)||0),0),date:pays[0].date||'',months:[...new Set(pays.map(p=>p.month))].sort()};
+}
+function receiptText(receiptNo){
+const d=receiptData(receiptNo);if(!d)return '';
+const phone=d.a?.phone||'غير مسجل';
+return ['إيصال سداد اشتراك العمارة','رقم الإيصال: '+receiptNo,'الشقة: '+(d.a?aptName(d.a):''),'الاسم: '+(d.a?.name||'غير مسجل'),'تاريخ الدفع: '+d.date,'الشهر/الشهور المحتسبة: '+d.months.join('، '),'تفاصيل المبلغ:',...d.pays.map(p=>p.month+': '+money(p.amount)+' جنيه'),'إجمالي المدفوع: '+money(d.total)+' جنيه','رقم الهاتف المسجل: '+phone,'شكراً لحضرتك.'].join('\n');
+}
+function openReceipt(receiptNo){
+const d=receiptData(receiptNo);if(!d)return;
+const a=d.a||{};
+const rows=d.pays.map(p=>'<tr><td>'+esc(p.month)+'</td><td>'+money(p.amount)+' ج.م</td></tr>').join('');
+document.getElementById('receiptContent').innerHTML='<div class="receipt-paper"><h2>🏢 إيصال سداد</h2><p class="receipt-sub">حسابات العمارة</p><p><b>رقم الإيصال:</b> '+esc(receiptNo)+'</p><p><b>الشقة:</b> '+esc(a?aptName(a):'')+'</p><p><b>اسم الساكن:</b> '+esc(a.name||'غير مسجل')+'</p><p><b>تاريخ الدفع:</b> '+esc(d.date)+'</p><table><thead><tr><th>الشهر المحتسب</th><th>المبلغ</th></tr></thead><tbody>'+rows+'</tbody></table><div class="receipt-total">الإجمالي: '+money(d.total)+' جنيه</div><p style="text-align:center;color:#64756f">تم استلام المبلغ الموضح أعلاه، وشكراً لالتزامكم.</p></div>';
+document.getElementById('receiptModal').dataset.receipt=receiptNo;
+document.getElementById('receiptModal').classList.add('open');
+}
+document.getElementById('receiptWhatsApp').onclick=()=>{
+const no=document.getElementById('receiptModal').dataset.receipt,d=receiptData(no);if(!d)return;
+let phone=String(d.a?.phone||'').replace(/[^0-9]/g,'');
+if(phone.startsWith('01'))phone='2'+phone;
+else if(phone.startsWith('1')&&phone.length===10)phone='20'+phone;
+const url='https://wa.me/'+(phone||'')+'?text='+encodeURIComponent(receiptText(no));
+window.open(url,'_blank');
+};
+document.getElementById('receiptPrint').onclick=()=>window.print();
+document.getElementById('receiptClose').onclick=()=>document.getElementById('receiptModal').classList.remove('open');
 function renderAptPage(id){
 const a=db.apartments.find(x=>x.id===id);if(!a)return;
 const totalDue=db.charges.filter(c=>c.apt===id).reduce((s,c)=>s+(Number(c.amount)||0),0);
