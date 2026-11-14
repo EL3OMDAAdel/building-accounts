@@ -11,13 +11,13 @@
 <style>
 :root{--bg:#f3f6f5;--card:#fff;--ink:#18332e;--muted:#64756f;--green:#176b52;--line:#e2e9e6;--red:#b63d3d;--gold:#9a6a12}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:#1c2d29;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}
-header{background:#173b35;color:white;padding:22px max(18px,calc((100% - 1100px)/2))}
-header h1{margin:0 0 5px;font-size:25px}header p{margin:0;color:#d0e2dc;font-size:14px}
+header{background:linear-gradient(135deg,#123d35,#1d7057);color:white;padding:26px max(18px,calc((100% - 1100px)/2));box-shadow:0 5px 20px #123d351c}
+header h1{margin:0 0 7px;font-size:27px;letter-spacing:.2px}header p{margin:0;color:#d0e2dc;font-size:14px}
 .wrap{max-width:1100px;margin:20px auto;padding:0 14px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:16px;box-shadow:0 2px 8px #183b3510}
-.stat small{color:var(--muted)}.stat strong{display:block;font-size:25px;margin-top:5px;color:var(--ink)}
-nav{display:flex;gap:8px;overflow:auto;margin:18px 0}
-button,.tab{border:0;border-radius:10px;padding:11px 15px;font:inherit;cursor:pointer;background:#e3ece8;color:var(--ink);white-space:nowrap}
+.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:17px;box-shadow:0 4px 15px #183b350b}
+.stat small{color:var(--muted);font-size:13px}.stat strong{display:block;font-size:25px;margin-top:7px;color:var(--ink);font-weight:750}
+nav{display:flex;gap:9px;overflow:auto;margin:20px 0;padding:5px 2px 9px;scrollbar-width:thin}
+button,.tab{border:0;border-radius:11px;padding:11px 16px;font:inherit;cursor:pointer;background:#e8efec;color:var(--ink);white-space:nowrap;transition:background .15s,transform .15s}button:active,.tab:active{transform:scale(.98)}
 .tab.active,button.primary{background:var(--green);color:white}.tab.danger{background:#f8e8e8;color:var(--red)}
 section{display:none}section.active{display:block}.toolbar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:14px}
 .field{display:flex;flex-direction:column;gap:5px;min-width:150px;flex:1}.field label{font-size:13px;color:var(--muted)}
@@ -36,7 +36,7 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 @media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}header h1{font-size:22px}.wrap{margin-top:12px}.card{padding:13px}}
 </style></head>
 <body>
-<header><h1>🏢 حسابات العمارة</h1><p>إدارة اشتراكات السكان والتحصيل والمصروفات والمديونيات</p></header>
+<header><h1>🏢 حسابات العمارة</h1><p>لوحة متابعة الاشتراكات والتحصيل والمصروفات</p></header>
 <div class="wrap">
 <div class="stats">
 <div class="card stat"><small>إجمالي الاشتراكات الشهرية</small><strong id="sDue">6,150 ج.م</strong></div>
@@ -45,11 +45,11 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 <div class="card stat"><small>إجمالي المصروفات</small><strong id="sExpense">0 ج.م</strong></div>
 </div>
 <nav>
-<button class="tab active" data-tab="dues">الاشتراكات والتحصيل</button><button class="tab" data-tab="apartments">الشقق والسكان</button><button class="tab" data-tab="expenses">المصروفات</button><button class="tab" data-tab="reports">التقارير</button><button class="tab" data-tab="backup">النسخ الاحتياطي</button><button class="tab" data-tab="manage">إدارة التعديلات</button>
+<button class="tab active" data-tab="dues">الاشتراكات والتحصيل</button><button class="tab" data-tab="apartments">الشقق والسكان</button><button class="tab" data-tab="expenses">المصروفات</button><button class="tab" data-tab="reports">التقارير</button><button class="tab" data-tab="backup">النسخ الاحتياطي</button><button class="tab" data-tab="manage">إدارة السجلات</button>
 </nav>
 <section id="dues" class="active">
 <div class="card">
-  <div class="toolbar"><div class="field"><label>الشهر</label><input type="month" id="month"></div><button class="primary" id="makeDues">إنشاء مستحقات الشهر</button><button id="makeThroughOctober">إنشاء اشتراكات يناير إلى أكتوبر 2026</button><button id="allMonths">عرض كل المديونيات</button></div>
+  <div class="toolbar"><div class="field"><label>الشهر</label><input type="month" id="month"></div><button class="primary" id="makeDues">إنشاء مستحقات الشهر</button></div>
   <div class="notice">من يناير إلى يونيو 2026: الدور الأول 200 جنيه وباقي الأدوار 250 جنيه. من يوليو 2026 وما بعده: الدور الأول 250 جنيه وباقي الأدوار 300 جنيه. الدفعات تُخصم من أقدم شهر مستحق أولاً.</div>
   <div class="table-wrap"><table><thead><tr><th>الشقة</th><th>الاشتراك</th><th>مدفوع هذا الشهر</th><th>المتبقي</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="duesBody"></tbody></table></div>
 </div>
@@ -66,7 +66,7 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 <div class="card" style="margin-top:14px"><h3>المديونيات حسب الشقة</h3><div class="table-wrap"><table><thead><tr><th>الشقة</th><th>إجمالي المستحق</th><th>إجمالي المدفوع</th><th>المديونية</th></tr></thead><tbody id="debtBody"></tbody></table></div></div>
 </section>
 <section id="manage">
- <div class="card"><h3>تسجيل المدفوعات من أبريل إلى أكتوبر 2026</h3><p class="muted">تسجيل سداد كامل للشقق من 1 إلى 14 ومن 16 إلى 21. الشقة رقم 15 مستثناة. لن تُكرر أي مبالغ مسجلة بالفعل، ولن يتم تغيير الدفعات القديمة.</p><button class="primary" id="bulkPaidAprOct">تسجيل المدفوعات الآن</button></div>
+ 
 <div class="card"><h3>إدارة الدفعات</h3><p class="muted">يمكن تعديل أو حذف أي حركة دفع مسجلة. التعديل يخص السجل المحدد فقط.</p><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الشقة</th><th>الشهر المحتسب</th><th>المبلغ</th><th>ملاحظات</th><th>إجراء</th></tr></thead><tbody id="managePayments"></tbody></table></div></div>
 <div class="card" style="margin-top:14px"><h3>إدارة الاشتراكات الشهرية</h3><p class="muted">يمكن تعديل قيمة الاشتراك أو حذف سجل الشهر إذا لم توجد عليه دفعات.</p><div class="table-wrap"><table><thead><tr><th>الشهر</th><th>الشقة</th><th>المبلغ</th><th>المدفوع</th><th>إجراء</th></tr></thead><tbody id="manageCharges"></tbody></table></div></div>
 <div class="card" style="margin-top:14px"><h3>إدارة المصروفات</h3><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>النوع</th><th>البيان</th><th>المبلغ</th><th>إجراء</th></tr></thead><tbody id="manageExpenses"></tbody></table></div></div>
@@ -292,15 +292,6 @@ if(!m){alert('اختر الشهر أولاً');return}
 const n=ensureMonth(m);save();
 alert(n?`تم إنشاء مستحقات ${m} لعدد ${n} شقة`:'مستحقات هذا الشهر موجودة بالفعل');
 };
-document.getElementById('allMonths').onclick=()=>{
-const t=db.charges.length?db.charges.slice().sort((a,b)=>a.month.localeCompare(b.month)).map(c=>{
-  const a=db.apartments.find(a=>a.id===c.apt);
-  return `${c.month} — ${a?aptName(a):c.apt}: ${money(c.amount-paidFor(c.apt,c.month))} جنيه`;
-}).join('\n'):'لم يتم إنشاء مستحقات بعد';
-alert(t);
-};
-document.getElementById('makeThroughOctober').onclick=()=>{let made=0;for(let month=1;month<=10;month++){const m='2026-'+String(month).padStart(2,'0');made+=ensureMonth(m);}save();alert(made?'تم إنشاء '+made+' اشتراكاً للشهور الناقصة من يناير إلى أكتوبر 2026، دون تكرار الموجود أو تغيير الدفعات.':'اشتراكات يناير إلى أكتوبر 2026 موجودة بالفعل.');};
-document.getElementById('bulkPaidAprOct').onclick=()=>{if(!confirm('تأكيد تسجيل سداد كامل من أبريل إلى أكتوبر 2026 لكل الشقق ما عدا الشقة رقم 15؟ لن يتم تسجيل أي دفعة للشقة 15، ولن تتكرر الدفعات الموجودة.'))return;let count=0,total=0;for(let month=4;month<=10;month++){const m='2026-'+String(month).padStart(2,'0');ensureMonth(m);for(const a of db.apartments){const serial=(a.floor-1)*3+a.num;if(serial===15)continue;const due=dueFor(a.id,m),paid=paidFor(a.id,m),remaining=Math.max(0,due-paid);if(remaining>0){db.payments.push({id:makeId(),apt:a.id,month:m,amount:remaining,date:'',note:'سداد جماعي كامل بناءً على تأكيد المستخدم'});count++;total+=remaining;}}}save();alert('تم تسجيل '+count+' دفعة شهرية بإجمالي '+money(total)+' جنيه للشقق المسددة من أبريل إلى أكتوبر 2026. الشقة رقم 15 مستثناة.');};
 document.getElementById('month').onchange=render;
 document.getElementById('expDate').value=localDate();
 document.getElementById('addExpense').onclick=()=>{
