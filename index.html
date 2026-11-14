@@ -65,6 +65,7 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 <div class="card" style="margin-top:14px"><h3>المديونيات حسب الشقة</h3><div class="table-wrap"><table><thead><tr><th>الشقة</th><th>إجمالي المستحق</th><th>إجمالي المدفوع</th><th>المديونية</th></tr></thead><tbody id="debtBody"></tbody></table></div></div>
 </section>
 <section id="manage">
+ <div class="card"><h3>تسجيل المدفوعات من أبريل إلى أكتوبر 2026</h3><p class="muted">تسجيل سداد كامل للشقق من 1 إلى 14 ومن 16 إلى 21. الشقة رقم 15 مستثناة. لن تُكرر أي مبالغ مسجلة بالفعل، ولن يتم تغيير الدفعات القديمة.</p><button class="primary" id="bulkPaidAprOct">تسجيل المدفوعات الآن</button></div>
 <div class="card"><h3>إدارة الدفعات</h3><p class="muted">يمكن تعديل أو حذف أي حركة دفع مسجلة. التعديل يخص السجل المحدد فقط.</p><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الشقة</th><th>الشهر المحتسب</th><th>المبلغ</th><th>ملاحظات</th><th>إجراء</th></tr></thead><tbody id="managePayments"></tbody></table></div></div>
 <div class="card" style="margin-top:14px"><h3>إدارة الاشتراكات الشهرية</h3><p class="muted">يمكن تعديل قيمة الاشتراك أو حذف سجل الشهر إذا لم توجد عليه دفعات.</p><div class="table-wrap"><table><thead><tr><th>الشهر</th><th>الشقة</th><th>المبلغ</th><th>المدفوع</th><th>إجراء</th></tr></thead><tbody id="manageCharges"></tbody></table></div></div>
 <div class="card" style="margin-top:14px"><h3>إدارة المصروفات</h3><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>النوع</th><th>البيان</th><th>المبلغ</th><th>إجراء</th></tr></thead><tbody id="manageExpenses"></tbody></table></div></div>
@@ -280,6 +281,7 @@ const t=db.charges.length?db.charges.slice().sort((a,b)=>a.month.localeCompare(b
 alert(t);
 };
 document.getElementById('makeThroughOctober').onclick=()=>{let made=0;for(let month=1;month<=10;month++){const m='2026-'+String(month).padStart(2,'0');made+=ensureMonth(m);}save();alert(made?'تم إنشاء '+made+' اشتراكاً للشهور الناقصة من يناير إلى أكتوبر 2026، دون تكرار الموجود أو تغيير الدفعات.':'اشتراكات يناير إلى أكتوبر 2026 موجودة بالفعل.');};
+document.getElementById('bulkPaidAprOct').onclick=()=>{if(!confirm('تأكيد تسجيل سداد كامل من أبريل إلى أكتوبر 2026 لكل الشقق ما عدا الشقة رقم 15؟ لن يتم تسجيل أي دفعة للشقة 15، ولن تتكرر الدفعات الموجودة.'))return;let count=0,total=0;for(let month=4;month<=10;month++){const m='2026-'+String(month).padStart(2,'0');ensureMonth(m);for(const a of db.apartments){const serial=(a.floor-1)*3+a.num;if(serial===15)continue;const due=dueFor(a.id,m),paid=paidFor(a.id,m),remaining=Math.max(0,due-paid);if(remaining>0){db.payments.push({id:makeId(),apt:a.id,month:m,amount:remaining,date:'',note:'سداد جماعي كامل بناءً على تأكيد المستخدم'});count++;total+=remaining;}}}save();alert('تم تسجيل '+count+' دفعة شهرية بإجمالي '+money(total)+' جنيه للشقق المسددة من أبريل إلى أكتوبر 2026. الشقة رقم 15 مستثناة.');};
 document.getElementById('month').onchange=render;
 document.getElementById('expDate').value=localDate();
 document.getElementById('addExpense').onclick=()=>{
