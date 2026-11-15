@@ -88,6 +88,17 @@ textarea{background:linear-gradient(110deg,#fff 0%,#fff7db 40%,#fff 75%)!importa
 <body>
 <header><h1>🏢 حسابات العمارة</h1><p>لوحة متابعة الاشتراكات والتحصيل والمصروفات</p></header>
 <div class="wrap">
+<div class="card" id="cloudAuthCard" style="margin:14px 0;border:1px solid #c9d9d3">
+<h3>☁️ حساب المزامنة السحابية</h3>
+<p class="muted" id="cloudAuthStatus">لم يتم تسجيل الدخول. بياناتك الحالية تظل محفوظة على هذا الجهاز.</p>
+<div id="cloudLoginFields">
+<div class="field"><label for="cloudEmail">البريد الإلكتروني</label><input id="cloudEmail" type="email" autocomplete="username" placeholder="البريد المسجل في Supabase"></div>
+<div class="field" style="margin-top:8px"><label for="cloudPassword">كلمة المرور</label><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="كلمة مرور حساب Supabase"></div>
+<button class="primary" id="cloudLoginBtn" type="button" style="margin-top:10px">تسجيل الدخول</button>
+</div>
+<button id="cloudLogoutBtn" type="button" style="display:none">تسجيل الخروج</button>
+<p class="muted">تسجيل الدخول وحده لا يرفع أو يغيّر أي بيانات. سنختبر الاتصال أولاً قبل تفعيل المزامنة.</p>
+</div>
 <div class="stats">
 <div class="card stat"><small>إجمالي الاشتراكات الشهرية</small><strong id="sDue">6,150 ج.م</strong></div>
 <div class="card stat"><small>إجمالي المحصل</small><strong id="sPaid">0 ج.م</strong></div>
@@ -131,8 +142,48 @@ textarea{background:linear-gradient(110deg,#fff 0%,#fff7db 40%,#fff 75%)!importa
 </div>
 <div class="modal" id="modal"><div class="dialog"><h3 id="modalTitle">تسجيل دفعة</h3><div id="modalContent"></div><div class="dialog-actions"><button class="primary" id="modalSave">حفظ</button><button id="modalCancel">إلغاء</button></div></div></div>
 <div class="modal" id="receiptModal"><div class="dialog"><div id="receiptContent"></div><div class="dialog-actions no-print"><button class="primary" id="receiptWhatsApp">إرسال واتساب</button><button id="receiptPrint">طباعة الإيصال</button><button id="receiptClose">إغلاق</button></div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 'use strict';
+const SUPABASE_URL='https://rlmxxbcmocsveexzlfcy.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_puWGGFcRcWFQOnap4Lj8mw_fI5lW4Ey';
+const EXPECTED_CLOUD_USER='ee32fbfc-4af8-4f72-829a-9674edbfa461';
+let cloudClient=null;
+async function initCloudAuth(){
+ const status=document.getElementById('cloudAuthStatus');
+ const fields=document.getElementById('cloudLoginFields');
+ const login=document.getElementById('cloudLoginBtn');
+ const logout=document.getElementById('cloudLogoutBtn');
+ if(!window.supabase?.createClient){status.textContent='تعذر تحميل مكتبة الاتصال. يمكنك الاستمرار باستخدام البيانات المحلية.';return;}
+ cloudClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+ const showSession=session=>{
+  const user=session?.user;
+  if(user&&user.id!==EXPECTED_CLOUD_USER){
+   status.textContent='هذا البريد مرتبط بحساب مختلف عن الحساب المحدد لهذا التطبيق. تم تسجيل الخروج للحماية.';
+   cloudClient.auth.signOut();return;
+  }
+  fields.style.display=user?'none':'block';
+  logout.style.display=user?'inline-block':'none';
+  status.textContent=user?'تم تسجيل الدخول بنجاح بالحساب المخصص. لم يتم رفع بيانات بعد.':'لم يتم تسجيل الدخول. بياناتك الحالية تظل محفوظة على هذا الجهاز.';
+ };
+ const {data,error}=await cloudClient.auth.getSession();
+ if(error)status.textContent='تعذر التحقق من جلسة الدخول: '+error.message;
+ else showSession(data.session);
+ cloudClient.auth.onAuthStateChange((_event,session)=>showSession(session));
+ login.onclick=async()=>{
+  const email=document.getElementById('cloudEmail').value.trim();
+  const password=document.getElementById('cloudPassword').value;
+  if(!email||!password){alert('اكتب البريد الإلكتروني وكلمة المرور أولاً.');return;}
+  login.disabled=true;login.textContent='جارٍ تسجيل الدخول...';
+  const {data,error}=await cloudClient.auth.signInWithPassword({email,password});
+  login.disabled=false;login.textContent='تسجيل الدخول';
+  if(error){status.textContent='تعذر تسجيل الدخول: '+error.message;return;}
+  if(data.user?.id!==EXPECTED_CLOUD_USER){await cloudClient.auth.signOut();status.textContent='الحساب الذي أدخلته ليس الحساب المخصص لهذا التطبيق.';return;}
+  document.getElementById('cloudPassword').value='';
+ };
+ logout.onclick=async()=>{const {error}=await cloudClient.auth.signOut();status.textContent=error?'تعذر تسجيل الخروج: '+error.message:'تم تسجيل الخروج. بيانات الجهاز لم تتغير.';};
+}
+const KEY='buildingAccountsV1';
 const KEY='buildingAccountsV1';
 const defaultData={apartments:[],charges:[],payments:[],expenses:[],carryForward:0,extraAdd:0,extraDeduct:0};
 let db=load(),currentApt=null,selectedManagePaymentMonth="";
@@ -510,6 +561,7 @@ if(migratedReceipts) console.info('تم تجهيز إيصالات للدفعات
 syncOldCharges();
 localStorage.setItem(KEY,JSON.stringify(db));
 render();
+initCloudAuth().catch(e=>{const s=document.getElementById('cloudAuthStatus');if(s)s.textContent='تعذر تهيئة الاتصال: '+e.message;});
 
 if('serviceWorker'in navigator){
 window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
