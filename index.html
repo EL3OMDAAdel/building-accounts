@@ -27,7 +27,7 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 .pill{display:inline-block;border-radius:30px;padding:4px 9px;font-size:12px;background:#e8f3ee;color:#176b52}
 .pill.unpaid{background:#faeeee;color:#a73535}.pill.partial{background:#fff4dc;color:#8a6417}
 .muted{color:var(--muted)}.row-actions{display:flex;gap:6px}.small{padding:6px 9px;font-size:12px}
-.notice{padding:12px;border-radius:10px;background:#edf5f1;color:#285a49;margin:10px 0;font-size:13px}
+.month-choices{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}.month-choice{border:1px solid var(--line);border-radius:12px;padding:10px 13px;background:#f8faf9;color:var(--ink);min-width:105px}.month-choice.active{background:var(--green);color:#fff;border-color:var(--green)}.month-choice small{display:block;font-size:11px;opacity:.8;margin-top:3px}.notice{padding:12px;border-radius:10px;background:#edf5f1;color:#285a49;margin:10px 0;font-size:13px}
 .empty{text-align:center;padding:24px;color:var(--muted)}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .hidden{display:none!important}.danger-text{color:var(--red)}.footer{color:var(--muted);font-size:12px;text-align:center;margin:22px 0}
 .modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:15px;z-index:4}
@@ -47,9 +47,10 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 <div class="card stat"><small>إجمالي المصروفات</small><strong id="sExpense">0 ج.م</strong></div>
 <div class="card stat"><small>المرحل من السنة الماضية (جنيه)</small><input id="carryForwardInput" type="number" step="0.01" value="0" aria-label="المرحل من السنة الماضية" style="font-size:20px;font-weight:750;margin-top:7px;color:var(--ink)"></div>
 <div class="card stat"><small>مبالغ إضافية تضاف للرصيد (جنيه)</small><input id="extraAddInput" type="number" step="0.01" value="0" aria-label="مبالغ إضافية تضاف للرصيد" style="font-size:20px;font-weight:750;margin-top:7px;color:var(--ink)"></div>
-<div class="card stat"><small>مبالغ تخصم من الرصيد (جنيه)</small><input id="extraDeductInput" type="number" step="0.01" value="0" aria-label="مبالغ تخصم من الرصيد" style="font-size:20px;font-weight:750;margin-top:7px;color:var(--ink)"></div>
+<div class="card stat"><small>إجمالي مبالغ الخصم (جنيه)</small><strong id="sExtraDeduct">0</strong></div>
 <div class="card stat"><small>الرصيد الحالي بعد المصروفات والإضافات والخصومات</small><strong id="sBalance">0 ج.م</strong></div>
 </div>
+<div class="card" style="margin-top:14px"><h3>تسجيل مبالغ تخصم من الرصيد</h3><p class="muted">أضف كل خصم كبند مستقل مع ملاحظة توضح سببه. جميع البنود تُجمع تلقائياً في إجمالي الخصومات.</p><div class="toolbar"><div class="field"><label for="extraDeductAmount">المبلغ بالجنيه</label><input id="extraDeductAmount" type="number" min="0.01" step="0.01" placeholder="المبلغ"></div><div class="field"><label for="extraDeductNote">ملاحظات / سبب الخصم</label><input id="extraDeductNote" placeholder="اكتب سبب الخصم"></div><button class="primary" id="addExtraDeduct">إضافة الخصم</button></div><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>الملاحظات</th><th>إجراء</th></tr></thead><tbody id="extraDeductBody"></tbody></table></div></div>
 <nav>
 <button class="tab active" data-tab="dues">الاشتراكات والتحصيل</button><button class="tab" data-tab="apartments">الشقق والسكان</button><button class="tab" data-tab="expenses">المصروفات</button><button class="tab" data-tab="reports">التقارير</button><button class="tab" data-tab="backup">النسخ الاحتياطي</button><button class="tab" data-tab="manage">إدارة السجلات</button>
 </nav>
@@ -73,7 +74,7 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 </section>
 <section id="manage">
  
-<div class="card"><h3>إدارة الدفعات</h3><p class="muted">اختر شهر الاشتراك المحتسب لعرض دفعاته فقط، ويمكن تعديل أو حذف أي حركة دفع مسجلة.</p><div class="toolbar"><div class="field"><label for="managePaymentMonth">اختر الشهر</label><select id="managePaymentMonth"></select></div><div class="field"><label>إجمالي دفعات الشهر</label><strong id="managePaymentTotal">0 جنيه</strong></div></div><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الشقة</th><th>الشهر المحتسب</th><th>المبلغ</th><th>ملاحظات</th><th>إجراء</th></tr></thead><tbody id="managePayments"></tbody></table></div></div>
+<div class="card"><h3>إدارة الدفعات</h3><p class="muted">اختر شهر الاشتراك المحتسب لعرض دفعاته فقط، ويمكن تعديل أو حذف أي حركة دفع مسجلة.</p><div class="field"><label>اختر شهر الدفعات</label></div><div id="managePaymentMonths" class="month-choices"></div><div class="notice">كل زر يمثل شهراً مستقلاً. اضغط على الشهر لعرض دفعاته فقط.</div><p class="muted">إجمالي دفعات الشهر المحدد: <strong id="managePaymentTotal">0 جنيه</strong></p><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الشقة</th><th>الشهر المحتسب</th><th>المبلغ</th><th>ملاحظات</th><th>إجراء</th></tr></thead><tbody id="managePayments"></tbody></table></div></div>
 <div class="card" style="margin-top:14px"><h3>إدارة الاشتراكات الشهرية</h3><p class="muted">يمكن تعديل مبلغ الاشتراك وإجمالي المدفوع؛ تعديل المدفوع يحدّث سجلات الدفعات والإيصالات.</p><div class="table-wrap"><table><thead><tr><th>الشهر</th><th>الشقة</th><th>المبلغ</th><th>المدفوع</th><th>إجراء</th></tr></thead><tbody id="manageCharges"></tbody></table></div></div>
 <div class="card" style="margin-top:14px"><h3>إدارة المصروفات</h3><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>النوع</th><th>البيان</th><th>المبلغ</th><th>إجراء</th></tr></thead><tbody id="manageExpenses"></tbody></table></div></div>
 </section>
@@ -86,7 +87,7 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 'use strict';
 const KEY='buildingAccountsV1';
 const defaultData={apartments:[],charges:[],payments:[],expenses:[],carryForward:0,extraAdd:0,extraDeduct:0};
-let db=load(),currentApt=null;
+let db=load(),currentApt=null,selectedManagePaymentMonth="";
 
 function freshData(){
 const d={apartments:[],charges:[],payments:[],expenses:[],carryForward:0};
@@ -105,7 +106,10 @@ try{
     d.carryForward=Number.isFinite(Number(d.carryForward))?Number(d.carryForward):0;
     d.extraAdd=Number.isFinite(Number(d.extraAdd))?Number(d.extraAdd):0;
     d.extraDeduct=Number.isFinite(Number(d.extraDeduct))?Number(d.extraDeduct):0;
-    return d;
+    d.extraDeductions=Array.isArray(d.extraDeductions)?d.extraDeductions:[];
+    if(!d.extraDeductions.length&&d.extraDeduct>0)d.extraDeductions.push({id:makeId(),amount:d.extraDeduct,note:"خصم سابق قبل تحديث البنود",date:localDate()});
+    d.extraDeduct=d.extraDeductions.reduce((s,x)=>s+(Number(x.amount)||0),0);
+    return d;
    }
   }
 }catch(e){console.error('تعذر قراءة البيانات المحفوظة',e)}
@@ -177,8 +181,11 @@ document.getElementById('sDebt').textContent=money(debt)+' ج.م';
 document.getElementById('sExpense').textContent=money(exp)+' ج.م';
 document.getElementById('carryForwardInput').value=Number(db.carryForward)||0;
 document.getElementById('extraAddInput').value=Number(db.extraAdd)||0;
-document.getElementById('extraDeductInput').value=Number(db.extraDeduct)||0;
-document.getElementById('sBalance').textContent=money((Number(db.carryForward)||0)+totalPaid+(Number(db.extraAdd)||0)-(Number(db.extraDeduct)||0)-exp)+' ج.م';
+const deductionsTotal=db.extraDeductions.reduce((s,x)=>s+(Number(x.amount)||0),0);
+db.extraDeduct=deductionsTotal;
+document.getElementById('sExtraDeduct').textContent=money(deductionsTotal);
+document.getElementById('sBalance').textContent=money((Number(db.carryForward)||0)+totalPaid+(Number(db.extraAdd)||0)-deductionsTotal-exp)+' ج.م';
+renderExtraDeductions();
 
 const rows=db.apartments.map(a=>{
   const due=dueFor(a.id,m),paid=paidFor(a.id,m),rem=Math.max(0,due-paid);
@@ -203,8 +210,8 @@ document.getElementById('rPaid').textContent=money(totalPaid);
 document.getElementById('rExp').textContent=money(exp);
 document.getElementById('rCarryForward').textContent=money(Number(db.carryForward)||0);
 document.getElementById('rExtraAdd').textContent=money(Number(db.extraAdd)||0);
-document.getElementById('rExtraDeduct').textContent=money(Number(db.extraDeduct)||0);
-document.getElementById('rBalance').textContent=money((Number(db.carryForward)||0)+totalPaid+(Number(db.extraAdd)||0)-(Number(db.extraDeduct)||0)-exp);
+document.getElementById('rExtraDeduct').textContent=money(db.extraDeductions.reduce((s,x)=>s+(Number(x.amount)||0),0));
+document.getElementById('rBalance').textContent=money((Number(db.carryForward)||0)+totalPaid+(Number(db.extraAdd)||0)-db.extraDeductions.reduce((s,x)=>s+(Number(x.amount)||0),0)-exp);
 document.getElementById('rDebt').textContent=money(debt);
 document.getElementById('debtBody').innerHTML=db.apartments.map(a=>{
   const due=db.charges.filter(c=>c.apt===a.id).reduce((s,c)=>s+(Number(c.amount)||0),0);
@@ -225,15 +232,30 @@ function renderExpenses(){
  document.getElementById('expenseMonthTotal').textContent=money(expenses.reduce((sum,e)=>sum+(Number(e.amount)||0),0))+' جنيه';
  document.getElementById('expBody').innerHTML=expenses.map(e=>`<tr><td>${esc(e.date||'')}</td><td>${esc(e.type||'')}</td><td>${esc(e.note||'—')}</td><td>${money(e.amount)}</td><td><button class="small" onclick="editExpense('${e.id}')">تعديل</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد مصروفات لهذا الشهر</td></tr>';
 }
+function renderExtraDeductions(){
+ const rows=db.extraDeductions||[];
+ document.getElementById("extraDeductBody").innerHTML=rows.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map(x=>'<tr><td>'+esc(x.date||"")+'</td><td>'+money(x.amount)+' جنيه</td><td>'+esc(x.note||"—")+'</td><td><div class="row-actions"><button class="small" onclick="editExtraDeduct(\''+x.id+'\')">تعديل</button><button class="small danger-text" onclick="deleteExtraDeduct(\''+x.id+'\')">حذف</button></div></td></tr>').join("")||'<tr><td colspan="4" class="empty">لم يتم تسجيل خصومات بعد</td></tr>';
+}
+function selectManagePaymentMonth(month){selectedManagePaymentMonth=month;renderManagement()}
+function editExtraDeduct(id){
+ const x=db.extraDeductions.find(v=>v.id===id);if(!x)return;
+ const amount=prompt("المبلغ الجديد:",String(x.amount));if(amount===null)return;
+ const n=Number(amount);if(!(n>0)){alert("أدخل مبلغاً صحيحاً أكبر من صفر");return}
+ const note=prompt("ملاحظات / سبب الخصم:",x.note||"");if(note===null)return;
+ x.amount=n;x.note=note;db.extraDeduct=db.extraDeductions.reduce((s,v)=>s+(Number(v.amount)||0),0);save();
+}
+function deleteExtraDeduct(id){
+ const x=db.extraDeductions.find(v=>v.id===id);if(!x)return;
+ if(!confirm("تأكيد حذف بند الخصم "+money(x.amount)+" جنيه؟"))return;
+ db.extraDeductions=db.extraDeductions.filter(v=>v.id!==id);db.extraDeduct=db.extraDeductions.reduce((s,v)=>s+(Number(v.amount)||0),0);save();
+}
 function renderManagement(){
  const aptLabel=id=>{const a=db.apartments.find(x=>x.id===id);return a?aptOwnerCell(a):esc(String(id))};
  const aptRowStyle=id=>{const a=db.apartments.find(x=>x.id===id);return a?' style="background:'+floorColor(a.floor)+'"':''};
- const paymentMonthSelect=document.getElementById('managePaymentMonth');
- const previousPaymentMonth=paymentMonthSelect.value;
  const paymentMonths=[...new Set([monthNow(),...db.payments.map(p=>p.month).filter(Boolean)])].sort().reverse();
- paymentMonthSelect.innerHTML=paymentMonths.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('');
- paymentMonthSelect.value=paymentMonths.includes(previousPaymentMonth)?previousPaymentMonth:(paymentMonths[0]||'');
- const selectedPaymentMonth=paymentMonthSelect.value;
+ if(!paymentMonths.includes(selectedManagePaymentMonth))selectedManagePaymentMonth=paymentMonths[0]||"";
+ document.getElementById("managePaymentMonths").innerHTML=paymentMonths.map(m=>{const total=db.payments.filter(p=>p.month===m).reduce((s,p)=>s+(Number(p.amount)||0),0);return '<button type="button" class="month-choice '+(m===selectedManagePaymentMonth?'active':'')+'" onclick="selectManagePaymentMonth(\''+m+'\')">'+esc(m)+'<small>'+money(total)+' جنيه</small></button>';}).join("");
+ const selectedPaymentMonth=selectedManagePaymentMonth;
  const pays=db.payments.filter(p=>p.month===selectedPaymentMonth).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
  document.getElementById('managePaymentTotal').textContent=money(pays.reduce((sum,p)=>sum+(Number(p.amount)||0),0))+' جنيه';
  document.getElementById('managePayments').innerHTML=pays.map(p=>`<tr${aptRowStyle(p.apt)}><td>${esc(p.date||'')}</td><td>${aptLabel(p.apt)}</td><td>${esc(p.month||'')}</td><td>${money(p.amount)}</td><td>${esc(p.note||'—')}</td><td><div class="row-actions"><button class="small" onclick="editPayment('${p.id}')">تعديل</button><button class="small danger-text" onclick="deletePayment('${p.id}')">حذف</button></div></td></tr>`).join('')||'<tr><td colspan="6" class="empty">لا توجد دفعات لهذا الشهر</td></tr>';
@@ -380,7 +402,6 @@ document.querySelectorAll('section').forEach(x=>x.classList.toggle('active',x.id
 function bindBalanceInput(id,key){const el=document.getElementById(id);el.value=Number(db[key])||0;el.onchange=e=>{const raw=e.target.value.trim();const v=raw===''?0:Number(raw);if(!Number.isFinite(v)||v<0){alert('أدخل مبلغاً صحيحاً موجباً أو صفراً');e.target.value=Number(db[key])||0;return;}db[key]=v;save();};}
 bindBalanceInput('carryForwardInput','carryForward');
 bindBalanceInput('extraAddInput','extraAdd');
-bindBalanceInput('extraDeductInput','extraDeduct');
 document.getElementById('month').value=monthNow();
 document.getElementById('makeDues').onclick=()=>{
 const m=document.getElementById('month').value;
@@ -391,7 +412,15 @@ alert(n?`تم إنشاء مستحقات ${m} لعدد ${n} شقة`:'مستحقا
 document.getElementById('month').onchange=render;
 document.getElementById('expDate').value=localDate();
 document.getElementById('expenseMonth').onchange=renderExpenses;
-document.getElementById('managePaymentMonth').onchange=renderManagement;
+document.getElementById("addExtraDeduct").onclick=()=>{
+ const amount=Number(document.getElementById("extraDeductAmount").value);
+ const note=document.getElementById("extraDeductNote").value.trim();
+ if(!(amount>0)){alert("أدخل مبلغاً صحيحاً أكبر من صفر");return}
+ if(!note){alert("اكتب ملاحظة توضح سبب الخصم");return}
+ db.extraDeductions.push({id:makeId(),amount,note,date:localDate()});
+ db.extraDeduct=db.extraDeductions.reduce((s,x)=>s+(Number(x.amount)||0),0);
+ document.getElementById("extraDeductAmount").value="";document.getElementById("extraDeductNote").value="";save();
+};
 document.getElementById('addExpense').onclick=()=>{
 const date=document.getElementById('expDate').value,amount=Number(document.getElementById('expAmount').value);
 if(!date||!(amount>0)){alert('أدخل التاريخ والمبلغ');return}
