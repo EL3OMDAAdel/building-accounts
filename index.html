@@ -99,7 +99,7 @@ textarea{background:linear-gradient(110deg,#fff 0%,#fff7db 40%,#fff 75%)!importa
 <button id="cloudLogoutBtn" type="button" style="display:none">تسجيل الخروج</button>
 <button id="cloudTestBtn" type="button" style="display:none;margin-right:6px">اختبار الاتصال بقاعدة البيانات</button>
 <button id="cloudUploadBtn" class="primary" type="button" style="display:none;margin-right:6px">رفع نسخة هذا الجهاز للسحابة</button>
-<button id="cloudRestoreBtn" type="button" style="display:none;margin-right:6px;background:#8b2f2f;color:white">استعادة البيانات السحابية على هذا الجهاز</button>
+<button id="cloudRestoreBtn" type="button" style="display:none;margin-right:6px;background:#8b2f2f;color:white">استعادة البيانات السحابية على هذا الجهاز</button><button id="cloudSyncBtn" type="button" style="display:none;margin-right:6px;background:#176b52;color:white">مزامنة آمنة بين الجهازين</button>
 <p class="muted">تسجيل الدخول وحده لا يرفع أو يغيّر أي بيانات. سنختبر الاتصال أولاً قبل تفعيل المزامنة.</p>
 </div>
 <div class="stats">
@@ -170,6 +170,7 @@ async function initCloudAuth(){
   document.getElementById('cloudTestBtn').style.display=user?'inline-block':'none';
   document.getElementById('cloudUploadBtn').style.display=user?'inline-block':'none';
   document.getElementById('cloudRestoreBtn').style.display=user?'inline-block':'none';
+  document.getElementById('cloudSyncBtn').style.display=user?'inline-block':'none';
   status.textContent=user?'تم تسجيل الدخول بنجاح بالحساب المخصص. لم يتم رفع بيانات بعد.':'لم يتم تسجيل الدخول. بياناتك الحالية تظل محفوظة على هذا الجهاز.';
  };
  const {data,error}=await cloudClient.auth.getSession();
@@ -252,11 +253,79 @@ async function initCloudAuth(){
    if(!confirm(summary))return;
    localStorage.setItem('buildingAccountsPreCloudRestoreBackup',localRaw);
    localStorage.setItem(KEY,JSON.stringify(cloudData));
+   localStorage.setItem('buildingAccountsCloudBaselineHash',cloudHash(cloudData));
    status.textContent='تمت الاستعادة على هذا الجهاز. جارٍ إعادة تحميل التطبيق لعرض البيانات المستعادة...';
    location.reload();
   }catch(e){status.textContent='لم تتم الاستعادة: '+(e.message||'خطأ غير معروف')+'. بيانات الجهاز لم تُستبدل.';}
   finally{btn.disabled=false;btn.textContent='استعادة البيانات السحابية على هذا الجهاز';}
  };
+
+ document.getElementById('cloudSyncBtn').onclick=async()=>{
+  const btn=document.getElementById('cloudSyncBtn');
+  if(!cloudClient){status.textContent='الاتصال غير مهيأ.';return;}
+  btn.disabled=true;btn.textContent='جارٍ فحص التغييرات...';
+  try{
+   const {data:sessionData,error:sessionError}=await cloudClient.auth.getSession();
+   if(sessionError)throw sessionError;
+   if(sessionData.session?.user?.id!==EXPECTED_CLOUD_USER)throw new Error('سجّل الدخول بالحساب المخصص أولاً.');
+   const raw=localStorage.getItem(KEY);
+   if(!raw)throw new Error('لا توجد بيانات محلية.');
+   const localData=JSON.parse(raw);
+   if(!localData||!Array.isArray(localData.apartments)||localData.apartments.length!==21||!Array.isArray(localData.charges)||!Array.isArray(localData.payments)||!Array.isArray(localData.expenses))throw new Error('البيانات المحلية غير مكتملة؛ أوقفنا المزامنة.');
+   const {data:row,error:readError}=await cloudClient.from('building_data').select('owner_id,data,updated_at').eq('owner_id',EXPECTED_CLOUD_USER).maybeSingle();
+   if(readError)throw readError;
+   if(!row||!row.data)throw new Error('لا توجد نسخة سحابية. لم نرفع أو نغيّر أي بيانات.');
+   const localHash=cloudHash(localData),cloudHashValue=cloudHash(row.data);
+   const baseline=localStorage.getItem('buildingAccountsCloudBaselineHash');
+   if(!baseline){
+    if(localHash===cloudHashValue){
+     localStorage.setItem('buildingAccountsCloudBaselineHash',localHash);
+     status.textContent='تمت مطابقة الجهاز مع النسخة السحابية وتأسيس نقطة مزامنة آمنة. لم يتم تغيير أي بيانات.';
+    }else{
+     status.textContent='توقفنا للحماية: لا توجد نقطة مقارنة سابقة على هذا الجهاز والبيانات المحلية تختلف عن السحابة. لم نرفع أو نستبدل أي بيانات.';
+    }
+    return;
+   }
+   const localChanged=localHash!==baseline,cloudChanged=cloudHashValue!==baseline;
+   if(localHash===cloudHashValue){
+    localStorage.setItem('buildingAccountsCloudBaselineHash',localHash);
+    status.textContent='الجهازان متطابقان بالفعل. تم تحديث نقطة المزامنة فقط.';
+    return;
+   }
+   if(localChanged&&cloudChanged){
+    status.textContent='تعارض: توجد تغييرات على الجهاز والسحابة منذ آخر مزامنة. أوقفنا العملية ولم نكتب فوق أي نسخة.';
+    return;
+   }
+   if(localChanged){
+    const nextTime=new Date().toISOString();
+    const {data:updated,error:updateError}=await cloudClient.from('building_data').update({data:localData,updated_at:nextTime}).eq('owner_id',EXPECTED_CLOUD_USER).eq('updated_at',row.updated_at).select('updated_at').maybeSingle();
+    if(updateError)throw updateError;
+    if(!updated)throw new Error('تغيرت النسخة السحابية أثناء العملية. أوقفنا الرفع؛ أعد الفحص قبل أي محاولة.');
+    localStorage.setItem('buildingAccountsCloudBaselineHash',localHash);
+    status.textContent='تم إرسال تغييرات هذا الجهاز إلى السحابة بأمان. الجهاز الآخر يستقبلها عند تشغيل المزامنة عليه.';
+    return;
+   }
+   if(cloudChanged){
+    const backupKey='buildingAccountsPreCloudSyncBackup_'+Date.now();
+    localStorage.setItem(backupKey,raw);
+    localStorage.setItem(KEY,JSON.stringify(row.data));
+    localStorage.setItem('buildingAccountsCloudBaselineHash',cloudHashValue);
+    status.textContent='تم استلام تغييرات النسخة السحابية. حُفظت نسخة محلية سابقة للحماية، وسيُعاد تحميل التطبيق.';
+    location.reload();
+   }
+  }catch(e){
+   status.textContent='لم تكتمل المزامنة: '+(e.message||'خطأ غير معروف')+'. لم نتعمد استبدال أي نسخة.';
+  }finally{
+   btn.disabled=false;btn.textContent='مزامنة آمنة بين الجهازين';
+  }
+ };
+ function cloudHash(value){
+  const stable=v=>Array.isArray(v)?'['+v.map(stable).join(',')+']':v&&typeof v==='object'?'{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}':JSON.stringify(v);
+  const str=stable(value);
+  let h1=0x811c9dc5,h2=0x9e3779b9;
+  for(let i=0;i<str.length;i++){const c=str.charCodeAt(i);h1=Math.imul(h1^c,0x01000193);h2=Math.imul(h2^c,0x85ebca6b);}
+  return (h1>>>0).toString(16)+'-'+(h2>>>0).toString(16)+'-'+str.length;
+ }
 
 }
 const KEY='buildingAccountsV1';
