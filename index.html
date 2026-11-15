@@ -43,8 +43,10 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 <div class="stats">
 <div class="card stat"><small>إجمالي الاشتراكات الشهرية</small><strong id="sDue">6,150 ج.م</strong></div>
 <div class="card stat"><small>إجمالي المحصل</small><strong id="sPaid">0 ج.م</strong></div>
-<div class="card stat"><small>إجمالي المتأخرات</small><strong id="sDebt">0 ج.م</strong></div>
+<div class="card stat"><small>متبقي التحصيل</small><strong id="sDebt">0 ج.م</strong></div>
 <div class="card stat"><small>إجمالي المصروفات</small><strong id="sExpense">0 ج.م</strong></div>
+<div class="card stat"><small>المرحل من السنة الماضية (جنيه)</small><input id="carryForwardInput" type="number" step="0.01" value="0" aria-label="المرحل من السنة الماضية" style="font-size:20px;font-weight:750;margin-top:7px;color:var(--ink)"></div>
+<div class="card stat"><small>الرصيد الحالي بعد المصروفات</small><strong id="sBalance">0 ج.م</strong></div>
 </div>
 <nav>
 <button class="tab active" data-tab="dues">الاشتراكات والتحصيل</button><button class="tab" data-tab="apartments">الشقق والسكان</button><button class="tab" data-tab="expenses">المصروفات</button><button class="tab" data-tab="reports">التقارير</button><button class="tab" data-tab="backup">النسخ الاحتياطي</button><button class="tab" data-tab="manage">إدارة السجلات</button>
@@ -62,7 +64,7 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 <section id="expenses"><div class="card"><h3>تسجيل مصروف جديد</h3><div class="toolbar"><div class="field"><label>التاريخ</label><input type="date" id="expDate"></div><div class="field"><label>نوع المصروف</label><select id="expType"><option>كهرباء</option><option>أسانسير</option><option>نظافة</option><option>صيانة</option><option>مياه</option><option>أخرى</option></select></div><div class="field"><label>المبلغ بالجنيه</label><input type="number" id="expAmount" min="0.01" step="0.01" placeholder="المبلغ"></div><div class="field"><label>البيان</label><input id="expNote" placeholder="تفاصيل المصروف"></div><button class="primary" id="addExpense">حفظ المصروف</button></div></div><div class="card" style="margin-top:14px"><h3>مصروفات كل شهر</h3><div class="toolbar"><div class="field"><label for="expenseMonth">اختر الشهر</label><select id="expenseMonth"></select></div><div class="field"><label>إجمالي مصروفات الشهر</label><strong id="expenseMonthTotal">0 جنيه</strong></div></div><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>النوع</th><th>البيان</th><th>المبلغ</th><th>إجراء</th></tr></thead><tbody id="expBody"></tbody></table></div></div></section>
 <section id="reports">
 <div class="grid2">
-  <div class="card"><h3>ملخص الحسابات</h3><p>إجمالي التحصيل: <b id="rPaid">0</b> ج.م</p><p>إجمالي المصروفات: <b id="rExp">0</b> ج.م</p><p>صافي الرصيد: <b id="rBalance">0</b> ج.م</p><p>إجمالي المديونيات: <b id="rDebt">0</b> ج.م</p></div>
+  <div class="card"><h3>ملخص الحسابات</h3><p>إجمالي التحصيل: <b id="rPaid">0</b> ج.م</p><p>إجمالي المصروفات: <b id="rExp">0</b> ج.م</p><p>المرحل من السنة الماضية: <b id="rCarryForward">0</b> ج.م</p><p>صافي الرصيد بعد إضافة المرحل وخصم المصروفات: <b id="rBalance">0</b> ج.م</p><p>إجمالي المديونيات: <b id="rDebt">0</b> ج.م</p></div>
   <div class="card"><h3>ملخص الاشتراكات</h3><p>من يناير إلى يونيو 2026: الدور الأول 600 جنيه شهرياً، وباقي الأدوار 4,500 جنيه، والإجمالي 5,100 جنيه.</p><p>من يوليو 2026 وما بعده: الدور الأول 750 جنيه شهرياً، وباقي الأدوار 5,400 جنيه، والإجمالي 6,150 جنيه.</p><button onclick="window.print()">طباعة التقرير</button></div>
 </div>
 <div class="card" style="margin-top:14px"><h3>المديونيات حسب الشقة</h3><div class="table-wrap"><table><thead><tr><th>الشقة</th><th>إجمالي المستحق</th><th>إجمالي المدفوع</th><th>المديونية</th></tr></thead><tbody id="debtBody"></tbody></table></div></div>
@@ -81,11 +83,11 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 <script>
 'use strict';
 const KEY='buildingAccountsV1';
-const defaultData={apartments:[],charges:[],payments:[],expenses:[]};
+const defaultData={apartments:[],charges:[],payments:[],expenses:[],carryForward:0};
 let db=load(),currentApt=null;
 
 function freshData(){
-const d={apartments:[],charges:[],payments:[],expenses:[]};
+const d={apartments:[],charges:[],payments:[],expenses:[],carryForward:0};
 for(let f=1;f<=7;f++)for(let n=1;n<=3;n++)d.apartments.push({id:`${f}-${n}`,floor:f,num:n,name:'',phone:''});
 return d;
 }
@@ -98,6 +100,7 @@ try{
     d.charges=Array.isArray(d.charges)?d.charges:[];
     d.payments=Array.isArray(d.payments)?d.payments:[];
     d.expenses=Array.isArray(d.expenses)?d.expenses:[];
+    d.carryForward=Number.isFinite(Number(d.carryForward))?Number(d.carryForward):0;
     return d;
    }
   }
@@ -168,6 +171,8 @@ document.getElementById('sDue').textContent=money(monthTotal(m))+' ج.م';
 document.getElementById('sPaid').textContent=money(totalPaid)+' ج.م';
 document.getElementById('sDebt').textContent=money(debt)+' ج.م';
 document.getElementById('sExpense').textContent=money(exp)+' ج.م';
+document.getElementById('carryForwardInput').value=Number(db.carryForward)||0;
+document.getElementById('sBalance').textContent=money((Number(db.carryForward)||0)+totalPaid-exp)+' ج.م';
 
 const rows=db.apartments.map(a=>{
   const due=dueFor(a.id,m),paid=paidFor(a.id,m),rem=Math.max(0,due-paid);
@@ -190,7 +195,8 @@ renderExpenses();
 
 document.getElementById('rPaid').textContent=money(totalPaid);
 document.getElementById('rExp').textContent=money(exp);
-document.getElementById('rBalance').textContent=money(totalPaid-exp);
+document.getElementById('rCarryForward').textContent=money(Number(db.carryForward)||0);
+document.getElementById('rBalance').textContent=money((Number(db.carryForward)||0)+totalPaid-exp);
 document.getElementById('rDebt').textContent=money(debt);
 document.getElementById('debtBody').innerHTML=db.apartments.map(a=>{
   const due=db.charges.filter(c=>c.apt===a.id).reduce((s,c)=>s+(Number(c.amount)||0),0);
@@ -330,6 +336,8 @@ document.querySelectorAll('.tab[data-tab]').forEach(b=>b.addEventListener('click
 document.querySelectorAll('.tab[data-tab]').forEach(x=>x.classList.toggle('active',x===b));
 document.querySelectorAll('section').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));
 }));
+document.getElementById('carryForwardInput').value=Number(db.carryForward)||0;
+document.getElementById('carryForwardInput').onchange=e=>{const v=Number(e.target.value);if(!Number.isFinite(v)){alert('أدخل مبلغاً صحيحاً');e.target.value=Number(db.carryForward)||0;return;}db.carryForward=v;save();};
 document.getElementById('month').value=monthNow();
 document.getElementById('makeDues').onclick=()=>{
 const m=document.getElementById('month').value;
