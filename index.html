@@ -38,37 +38,18 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 @media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}header h1{font-size:22px}.wrap{margin-top:12px}.card{padding:13px}}
 
 
-/* إضاءة أوضح لكل البطاقات وخانات الإدخال */
-.card{animation:universalCardGlow 2.7s ease-in-out infinite!important;box-shadow:0 0 0 1px #31b56b55,0 0 10px #31b56b35,0 0 20px #31b56b18!important;transition:box-shadow .25s ease,border-color .25s ease!important;}
-.card:hover{box-shadow:0 0 0 2px #31b56b88,0 0 15px #31b56b66,0 0 25px #31b56b30!important;}
-input:not([type="checkbox"]):not([type="radio"]),select,textarea{border:1px solid #83bd9a!important;box-shadow:0 0 5px #31b56b35,0 0 10px #31b56b18!important;animation:universalFieldGlow 2.4s ease-in-out infinite!important;}
-input:not([type="checkbox"]):not([type="radio"]):focus,select:focus,textarea:focus{border-color:#16a34a!important;box-shadow:0 0 0 3px #22c55e30,0 0 15px #22c55e70!important;}
-@keyframes universalCardGlow{0%,100%{box-shadow:0 0 0 1px #31b56b44,0 0 7px #31b56b28,0 0 13px #31b56b12}50%{box-shadow:0 0 0 2px #31b56b88,0 0 15px #31b56b60,0 0 24px #31b56b30}}
-@keyframes universalFieldGlow{0%,100%{box-shadow:0 0 4px #31b56b22,0 0 7px #31b56b12}50%{box-shadow:0 0 8px #31b56b55,0 0 14px #31b56b28}}
-/* إجمالي الخصومات رمادي فاتح جدًا وبدون إضاءة */
-.deduct-total-soft{background:#f7f7f7!important;border:1px solid #eeeeee!important;box-shadow:none!important;animation:none!important;}
-.deduct-total-soft small{color:#a0a0a0!important;}
-.deduct-total-soft strong{color:#8d8d8d!important;text-shadow:none!important;}
-@media(prefers-reduced-motion:reduce){.card,input,select,textarea{animation:none!important}}
 
-/* تعميم الإضاءة المتحركة على جميع خانات وبطاقات البرنامج */
-.card:not(.stat-glow-green):not(.stat-glow-red){animation:allCardsPulse 3.6s ease-in-out infinite;box-shadow:0 0 5px #16a34a20,0 0 12px #16a34a10;transition:box-shadow .3s ease,border-color .3s ease;}
-.card:not(.stat-glow-green):not(.stat-glow-red):hover{box-shadow:0 0 10px #16a34a40,0 0 20px #16a34a20;border-color:#86c5a2;}
-input:not([type="checkbox"]):not([type="radio"]),select,textarea{border-color:#a8cbb8;box-shadow:0 0 4px #16a34a22;transition:box-shadow .35s ease,border-color .35s ease;}
-input:not([type="checkbox"]):not([type="radio"]):focus,select:focus,textarea:focus{border-color:#16a34a;box-shadow:0 0 0 3px #22c55e22,0 0 12px #22c55e55;outline:none;}
-@keyframes allCardsPulse{0%,100%{box-shadow:0 0 4px #16a34a18,0 0 10px #16a34a0c}50%{box-shadow:0 0 9px #16a34a35,0 0 18px #16a34a18}}
-@media(prefers-reduced-motion:reduce){.card{animation:none!important}}
-/* ألوان وإضاءة خفيفة متحركة لخانات الرصيد والتحصيل */
-.stat-glow-green,.stat-glow-red{position:relative;isolation:isolate;overflow:hidden;border-width:1.5px;}
-.stat-glow-green{border-color:#16a34a;box-shadow:0 0 8px #22c55e55,0 0 18px #22c55e22;animation:greenPulse 2.8s ease-in-out infinite;}
-.stat-glow-green strong{color:#15803d!important;text-shadow:0 0 8px #22c55e66;}
-.stat-glow-red{border-color:#dc2626;box-shadow:0 0 8px #ef444455,0 0 18px #ef444422;animation:redPulse 2.8s ease-in-out infinite;}
-.stat-glow-red strong{color:#dc2626!important;text-shadow:0 0 8px #ef444466;}
-.stat-glow-green:after,.stat-glow-red:after{content:"";position:absolute;z-index:-1;top:-60%;left:-70%;width:45%;height:220%;transform:rotate(22deg);background:linear-gradient(90deg,transparent,#ffffff88,transparent);animation:shineSweep 4s ease-in-out infinite;pointer-events:none;}
-@keyframes greenPulse{0%,100%{box-shadow:0 0 6px #22c55e44,0 0 14px #22c55e18}50%{box-shadow:0 0 13px #22c55e88,0 0 25px #22c55e44}}
-@keyframes redPulse{0%,100%{box-shadow:0 0 6px #ef444444,0 0 14px #ef444418}50%{box-shadow:0 0 13px #ef444488,0 0 25px #ef444444}}
-@keyframes shineSweep{0%,15%{left:-70%}65%,100%{left:140%}}
-@media(prefers-reduced-motion:reduce){.stat-glow-green,.stat-glow-red,.stat-glow-green:after,.stat-glow-red:after{animation:none}}
+/* إضاءة قوية وواضحة ومستمرة الحركة لكل الخانات */
+.card:not(.deduct-total-soft){position:relative!important;animation:visibleCardGlow 1.8s ease-in-out infinite!important;border:1px solid #22c55e!important;box-shadow:0 0 5px 2px #22c55e99,0 0 13px 4px #22c55e66,0 0 24px 5px #16a34a44!important;}
+input:not([type="checkbox"]):not([type="radio"]),select,textarea{border:2px solid #22a85a!important;background:linear-gradient(110deg,#ffffff 0%,#e5ffed 35%,#ffffff 65%,#e5ffed 100%)!important;background-size:260% 100%!important;animation:visibleFieldGlow 1.35s linear infinite!important;box-shadow:0 0 5px 2px #22c55e99,0 0 13px 4px #22c55e66!important;}
+input:not([type="checkbox"]):not([type="radio"]):focus,select:focus,textarea:focus{border-color:#087b36!important;box-shadow:0 0 0 3px #22c55e55,0 0 20px 7px #22c55eaa!important;}
+@keyframes visibleCardGlow{0%,100%{box-shadow:0 0 4px 1px #22c55e77,0 0 10px 3px #22c55e55,0 0 17px 4px #16a34a33}50%{box-shadow:0 0 9px 3px #22c55eff,0 0 22px 8px #22c55ecc,0 0 34px 10px #16a34a77}}
+@keyframes visibleFieldGlow{0%{background-position:100% 0;box-shadow:0 0 4px 1px #22c55e77,0 0 9px 3px #22c55e44}50%{background-position:0 0;box-shadow:0 0 9px 3px #22c55eff,0 0 18px 6px #22c55e99}100%{background-position:-100% 0;box-shadow:0 0 4px 1px #22c55e77,0 0 9px 3px #22c55e44}}
+/* إجمالي مبالغ الخصم شبه أبيض، بالكاد يُلاحظ */
+.deduct-total-soft{background:#fefefe!important;border:1px solid #fdfdfd!important;box-shadow:none!important;animation:none!important;opacity:.42!important;}
+.deduct-total-soft small,.deduct-total-soft strong{color:#eeeeee!important;text-shadow:none!important;}
+.deduct-total-soft:hover{box-shadow:none!important;}
+
 </style></head>
 <body>
 <header><h1>🏢 حسابات العمارة</h1><p>لوحة متابعة الاشتراكات والتحصيل والمصروفات</p></header>
