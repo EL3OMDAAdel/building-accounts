@@ -226,7 +226,8 @@ function renderExpenses(){
  document.getElementById('expBody').innerHTML=expenses.map(e=>`<tr><td>${esc(e.date||'')}</td><td>${esc(e.type||'')}</td><td>${esc(e.note||'—')}</td><td>${money(e.amount)}</td><td><button class="small" onclick="editExpense('${e.id}')">تعديل</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد مصروفات لهذا الشهر</td></tr>';
 }
 function renderManagement(){
- const aptLabel=id=>{const a=db.apartments.find(x=>x.id===id);return a?aptName(a):String(id)};
+ const aptLabel=id=>{const a=db.apartments.find(x=>x.id===id);return a?aptOwnerCell(a):esc(String(id))};
+ const aptRowStyle=id=>{const a=db.apartments.find(x=>x.id===id);return a?' style="background:'+floorColor(a.floor)+'"':''};
  const paymentMonthSelect=document.getElementById('managePaymentMonth');
  const previousPaymentMonth=paymentMonthSelect.value;
  const paymentMonths=[...new Set([monthNow(),...db.payments.map(p=>p.month).filter(Boolean)])].sort().reverse();
@@ -235,9 +236,9 @@ function renderManagement(){
  const selectedPaymentMonth=paymentMonthSelect.value;
  const pays=db.payments.filter(p=>p.month===selectedPaymentMonth).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
  document.getElementById('managePaymentTotal').textContent=money(pays.reduce((sum,p)=>sum+(Number(p.amount)||0),0))+' جنيه';
- document.getElementById('managePayments').innerHTML=pays.map(p=>`<tr><td>${esc(p.date||'')}</td><td>${esc(aptLabel(p.apt))}</td><td>${esc(p.month||'')}</td><td>${money(p.amount)}</td><td>${esc(p.note||'—')}</td><td><div class="row-actions"><button class="small" onclick="editPayment('${p.id}')">تعديل</button><button class="small danger-text" onclick="deletePayment('${p.id}')">حذف</button></div></td></tr>`).join('')||'<tr><td colspan="6" class="empty">لا توجد دفعات لهذا الشهر</td></tr>';
+ document.getElementById('managePayments').innerHTML=pays.map(p=>`<tr${aptRowStyle(p.apt)}><td>${esc(p.date||'')}</td><td>${aptLabel(p.apt)}</td><td>${esc(p.month||'')}</td><td>${money(p.amount)}</td><td>${esc(p.note||'—')}</td><td><div class="row-actions"><button class="small" onclick="editPayment('${p.id}')">تعديل</button><button class="small danger-text" onclick="deletePayment('${p.id}')">حذف</button></div></td></tr>`).join('')||'<tr><td colspan="6" class="empty">لا توجد دفعات لهذا الشهر</td></tr>';
  const charges=[...db.charges].sort((a,b)=>b.month.localeCompare(a.month)||String(a.apt).localeCompare(String(b.apt)));
- document.getElementById('manageCharges').innerHTML=charges.map(ch=>`<tr><td>${esc(ch.month)}</td><td>${esc(aptLabel(ch.apt))}</td><td>${money(ch.amount)}</td><td>${money(paidFor(ch.apt,ch.month))}</td><td><div class="row-actions"><button class="small" onclick="editCharge('${ch.id}')">تعديل</button><button class="small danger-text" onclick="deleteCharge('${ch.id}')">حذف</button></div></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد اشتراكات مسجلة</td></tr>';
+ document.getElementById('manageCharges').innerHTML=charges.map(ch=>`<tr${aptRowStyle(ch.apt)}><td>${esc(ch.month)}</td><td>${aptLabel(ch.apt)}</td><td>${money(ch.amount)}</td><td>${money(paidFor(ch.apt,ch.month))}</td><td><div class="row-actions"><button class="small" onclick="editCharge('${ch.id}')">تعديل</button><button class="small danger-text" onclick="deleteCharge('${ch.id}')">حذف</button></div></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد اشتراكات مسجلة</td></tr>';
  const expenses=[...db.expenses].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
  document.getElementById('manageExpenses').innerHTML=expenses.map(e=>`<tr><td>${esc(e.date||'')}</td><td>${esc(e.type||'')}</td><td>${esc(e.note||'—')}</td><td>${money(e.amount)}</td><td><button class="small" onclick="editExpense('${e.id}')">تعديل</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد مصروفات</td></tr>';
 }
