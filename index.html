@@ -74,7 +74,7 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 <section id="manage">
  
 <div class="card"><h3>إدارة الدفعات</h3><p class="muted">اختر شهر الاشتراك المحتسب لعرض دفعاته فقط، ويمكن تعديل أو حذف أي حركة دفع مسجلة.</p><div class="toolbar"><div class="field"><label for="managePaymentMonth">اختر الشهر</label><select id="managePaymentMonth"></select></div><div class="field"><label>إجمالي دفعات الشهر</label><strong id="managePaymentTotal">0 جنيه</strong></div></div><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الشقة</th><th>الشهر المحتسب</th><th>المبلغ</th><th>ملاحظات</th><th>إجراء</th></tr></thead><tbody id="managePayments"></tbody></table></div></div>
-<div class="card" style="margin-top:14px"><h3>إدارة الاشتراكات الشهرية</h3><p class="muted">يمكن تعديل قيمة الاشتراك أو حذف سجل الشهر إذا لم توجد عليه دفعات.</p><div class="table-wrap"><table><thead><tr><th>الشهر</th><th>الشقة</th><th>المبلغ</th><th>المدفوع</th><th>إجراء</th></tr></thead><tbody id="manageCharges"></tbody></table></div></div>
+<div class="card" style="margin-top:14px"><h3>إدارة الاشتراكات الشهرية</h3><p class="muted">يمكن تعديل مبلغ الاشتراك وإجمالي المدفوع؛ تعديل المدفوع يحدّث سجلات الدفعات والإيصالات.</p><div class="table-wrap"><table><thead><tr><th>الشهر</th><th>الشقة</th><th>المبلغ</th><th>المدفوع</th><th>إجراء</th></tr></thead><tbody id="manageCharges"></tbody></table></div></div>
 <div class="card" style="margin-top:14px"><h3>إدارة المصروفات</h3><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>النوع</th><th>البيان</th><th>المبلغ</th><th>إجراء</th></tr></thead><tbody id="manageExpenses"></tbody></table></div></div>
 </section>
 <section id="backup"><div class="card"><h3>حفظ واسترجاع البيانات</h3><p class="muted">بيانات البرنامج محفوظة على نفس الجهاز والمتصفح. احتفظ بنسخة احتياطية دورياً، خصوصاً قبل تغيير الهاتف أو المتصفح.</p><div class="toolbar"><button class="primary" id="exportBtn">تنزيل نسخة احتياطية</button><div class="field"><label>استرجاع نسخة سابقة</label><input type="file" id="importFile" accept="application/json"></div></div><button class="tab danger" id="resetBtn">مسح كل البيانات</button></div></section>
@@ -268,8 +268,33 @@ function editExpense(id){
 function editCharge(id){
  const ch=db.charges.find(x=>x.id===id);if(!ch)return;
  const amount=prompt('قيمة الاشتراك الجديدة بالجنيه:',String(ch.amount));if(amount===null)return;
- const n=Number(amount);if(!(n>=0)){alert('أدخل مبلغاً صحيحاً');return}
- ch.amount=n;save();
+ const n=Number(amount);if(!Number.isFinite(n)||n<0){alert('أدخل مبلغ اشتراك صحيحاً');return}
+ const currentPaid=paidFor(ch.apt,ch.month);
+ const paidInput=prompt('إجمالي المدفوع الجديد لهذا الشهر بالجنيه\\nسيتم تحديث دفعات وإيصالات هذا الشهر:',String(currentPaid));if(paidInput===null)return;
+ const targetPaid=Number(paidInput);if(!Number.isFinite(targetPaid)||targetPaid<0){alert('أدخل إجمالي مدفوع صحيحاً أو صفراً');return}
+ ch.amount=n;
+ let rows=db.payments.filter(p=>p.apt===ch.apt&&p.month===ch.month).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ let difference=targetPaid-currentPaid;
+ if(difference<0){
+  let reduce=-difference;
+  for(const p of rows){
+   if(reduce<=0)break;
+   const oldAmount=Number(p.amount)||0;
+   const cut=Math.min(oldAmount,reduce);
+   p.amount=oldAmount-cut;reduce-=cut;
+  }
+  db.payments=db.payments.filter(p=>(Number(p.amount)||0)>0);
+ }else if(difference>0){
+  if(rows.length){
+   const p=rows[0];
+   if(!p.receiptNo)p.receiptNo='REC-'+(p.date||localDate()).replace(/-/g,'')+'-'+makeId().slice(-6).toUpperCase();
+   p.amount=(Number(p.amount)||0)+difference;
+  }else{
+   const date=ch.month+'-01';
+   db.payments.push({id:makeId(),apt:ch.apt,month:ch.month,amount:difference,date,note:'تعديل إجمالي المدفوع من إدارة الاشتراكات',receiptNo:'REC-'+date.replace(/-/g,'')+'-'+makeId().slice(-6).toUpperCase()});
+  }
+ }
+ save();
 }
 function deleteCharge(id){
  const ch=db.charges.find(x=>x.id===id);if(!ch)return;
