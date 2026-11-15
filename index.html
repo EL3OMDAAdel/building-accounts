@@ -418,6 +418,17 @@ if(confirm('تحذير: سيتم حذف كل بيانات السكان والد�
 }
 };
 
+// إضافة أرقام إيصالات للدفعات القديمة التي لا تحمل رقم إيصال؛ دون تغيير أي بيانات مالية.
+let migratedReceipts=0;
+db.payments.forEach(p=>{
+  if(!p.receiptNo){
+    const date=String(p.date||localDate()).replace(/-/g,'');
+    p.receiptNo='REC-'+date+'-'+makeId().slice(-6).toUpperCase();
+    migratedReceipts++;
+  }
+});
+if(migratedReceipts) console.info('تم تجهيز إيصالات للدفعات القديمة:',migratedReceipts);
+
 // تصحيح مبالغ المستحقات القديمة غير المسددة فقط، دون تغيير أي شهر عليه دفعة.
 syncOldCharges();
 localStorage.setItem(KEY,JSON.stringify(db));
