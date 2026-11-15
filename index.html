@@ -97,6 +97,7 @@ textarea{background:linear-gradient(110deg,#fff 0%,#fff7db 40%,#fff 75%)!importa
 <button class="primary" id="cloudLoginBtn" type="button" style="margin-top:10px">تسجيل الدخول</button>
 </div>
 <button id="cloudLogoutBtn" type="button" style="display:none">تسجيل الخروج</button>
+<button id="cloudTestBtn" type="button" style="display:none;margin-right:6px">اختبار الاتصال بقاعدة البيانات</button>
 <p class="muted">تسجيل الدخول وحده لا يرفع أو يغيّر أي بيانات. سنختبر الاتصال أولاً قبل تفعيل المزامنة.</p>
 </div>
 <div class="stats">
@@ -164,6 +165,7 @@ async function initCloudAuth(){
   }
   fields.style.display=user?'none':'block';
   logout.style.display=user?'inline-block':'none';
+  document.getElementById('cloudTestBtn').style.display=user?'inline-block':'none';
   status.textContent=user?'تم تسجيل الدخول بنجاح بالحساب المخصص. لم يتم رفع بيانات بعد.':'لم يتم تسجيل الدخول. بياناتك الحالية تظل محفوظة على هذا الجهاز.';
  };
  const {data,error}=await cloudClient.auth.getSession();
@@ -182,6 +184,17 @@ async function initCloudAuth(){
   document.getElementById('cloudPassword').value='';
  };
  logout.onclick=async()=>{const {error}=await cloudClient.auth.signOut();status.textContent=error?'تعذر تسجيل الخروج: '+error.message:'تم تسجيل الخروج. بيانات الجهاز لم تتغير.';};
+ document.getElementById('cloudTestBtn').onclick=async()=>{
+  const test=document.getElementById('cloudTestBtn');
+  test.disabled=true;test.textContent='جارٍ اختبار الاتصال...';
+  status.textContent='جارٍ فحص الاتصال الآمن بقاعدة البيانات دون قراءة أو رفع بيانات العمارة...';
+  try{
+   const {data,error}=await cloudClient.from('building_data').select('owner_id,updated_at').eq('owner_id',EXPECTED_CLOUD_USER).maybeSingle();
+   if(error)throw error;
+   status.textContent=data?'الاتصال بقاعدة البيانات ناجح. يوجد سجل سحابي بالفعل؛ لم نقرأ محتواه أو نغيّره.':'الاتصال بقاعدة البيانات ناجح. لا يوجد سجل سحابي لهذا الحساب حتى الآن. لم يتم رفع أو تعديل أي بيانات.';
+  }catch(e){status.textContent='فشل اختبار الاتصال: '+(e.message||'خطأ غير معروف')+'. لم يتم رفع أو تعديل أي بيانات.';}
+  finally{test.disabled=false;test.textContent='إعادة اختبار الاتصال بقاعدة البيانات';}
+ };
 }
 const KEY='buildingAccountsV1';
 const defaultData={apartments:[],charges:[],payments:[],expenses:[],carryForward:0,extraAdd:0,extraDeduct:0};
