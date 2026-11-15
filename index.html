@@ -50,6 +50,22 @@ input:not([type="checkbox"]):not([type="radio"]):focus,select:focus,textarea:foc
 .deduct-total-soft small,.deduct-total-soft strong{color:#eeeeee!important;text-shadow:none!important;}
 .deduct-total-soft:hover{box-shadow:none!important;}
 
+
+/* توهج أسود متحرك على البطاقات وخانات الإدخال */
+.card:not(.deduct-total-soft){border-color:#333!important;box-shadow:0 0 5px 2px #0009,0 0 14px 5px #0007,0 0 25px 7px #0004!important;animation:blackCardPulse 1.8s ease-in-out infinite!important;}
+input:not([type="checkbox"]):not([type="radio"]),select,textarea{border:2px solid #333!important;background:linear-gradient(110deg,#fff 0%,#e5e5e5 35%,#fff 65%,#e5e5e5 100%)!important;background-size:260% 100%!important;box-shadow:0 0 5px 2px #0009,0 0 13px 4px #0007!important;animation:blackFieldGlow 1.35s linear infinite!important;}
+input:not([type="checkbox"]):not([type="radio"]):focus,select:focus,textarea:focus{border-color:#000!important;box-shadow:0 0 0 3px #0005,0 0 20px 7px #000b!important;}
+@keyframes blackCardPulse{0%,100%{box-shadow:0 0 4px 1px #0008,0 0 10px 3px #0006,0 0 17px 4px #0004}50%{box-shadow:0 0 9px 3px #000,0 0 22px 8px #000c,0 0 34px 10px #0008}}
+@keyframes blackFieldGlow{0%{background-position:100% 0;box-shadow:0 0 4px 1px #0008,0 0 9px 3px #0005}50%{background-position:0 0;box-shadow:0 0 9px 3px #000,0 0 18px 6px #0009}100%{background-position:-100% 0;box-shadow:0 0 4px 1px #0008,0 0 9px 3px #0005}}
+/* متبقي التحصيل والرصيد الحالي باللون الأحمر */
+#sDebt,#sBalance{color:#dc2626!important;text-shadow:0 0 7px #dc262666!important;}
+.stat-glow-red{border-color:#dc2626!important;box-shadow:0 0 7px 2px #000a,0 0 18px 5px #0008!important;animation:blackCardPulse 1.8s ease-in-out infinite!important;}
+.stat-glow-red strong{color:#dc2626!important;text-shadow:0 0 7px #dc262666!important;}
+/* إجمالي الخصم يبقى شبه غير مرئي */
+.deduct-total-soft{background:#fefefe!important;border-color:#fdfdfd!important;box-shadow:none!important;animation:none!important;opacity:.42!important;}
+.deduct-total-soft small,.deduct-total-soft strong{color:#eeeeee!important;text-shadow:none!important;}
+.deduct-total-soft:hover{box-shadow:none!important;}
+
 </style></head>
 <body>
 <header><h1>🏢 حسابات العمارة</h1><p>لوحة متابعة الاشتراكات والتحصيل والمصروفات</p></header>
@@ -62,7 +78,7 @@ input:not([type="checkbox"]):not([type="radio"]):focus,select:focus,textarea:foc
 <div class="card stat"><small>المرحل من السنة الماضية (جنيه)</small><input id="carryForwardInput" type="number" step="0.01" value="0" aria-label="المرحل من السنة الماضية" style="font-size:20px;font-weight:750;margin-top:7px;color:var(--ink)"></div>
 <div class="card stat"><small>مبالغ إضافية تضاف للرصيد (جنيه)</small><input id="extraAddInput" type="number" step="0.01" value="0" aria-label="مبالغ إضافية تضاف للرصيد" style="font-size:20px;font-weight:750;margin-top:7px;color:var(--ink)"></div>
 <div class="card stat deduct-total-soft"><small>إجمالي مبالغ الخصم (جنيه)</small><strong id="sExtraDeduct">0</strong></div>
-<div class="card stat stat-glow-green"><small>الرصيد الحالي بعد المصروفات والإضافات والخصومات</small><strong id="sBalance">0 ج.م</strong></div>
+<div class="card stat stat-glow-red"><small>الرصيد الحالي بعد المصروفات والإضافات والخصومات</small><strong id="sBalance">0 ج.م</strong></div>
 </div>
 <div class="card" style="margin-top:14px"><h3>تسجيل مبالغ تخصم من الرصيد</h3><p class="muted">أضف كل خصم كبند مستقل مع ملاحظة توضح سببه. جميع البنود تُجمع تلقائياً في إجمالي الخصومات.</p><div class="toolbar"><div class="field"><label for="extraDeductAmount">المبلغ بالجنيه</label><input id="extraDeductAmount" type="number" min="0.01" step="0.01" placeholder="المبلغ"></div><div class="field"><label for="extraDeductNote">ملاحظات / سبب الخصم</label><input id="extraDeductNote" placeholder="اكتب سبب الخصم"></div><button class="primary" id="addExtraDeduct">إضافة الخصم</button></div><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>الملاحظات</th><th>إجراء</th></tr></thead><tbody id="extraDeductBody"></tbody></table></div></div>
 <nav>
