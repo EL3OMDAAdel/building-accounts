@@ -73,7 +73,7 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 </section>
 <section id="manage">
  
-<div class="card"><h3>إدارة الدفعات</h3><p class="muted">يمكن تعديل أو حذف أي حركة دفع مسجلة. التعديل يخص السجل المحدد فقط.</p><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الشقة</th><th>الشهر المحتسب</th><th>المبلغ</th><th>ملاحظات</th><th>إجراء</th></tr></thead><tbody id="managePayments"></tbody></table></div></div>
+<div class="card"><h3>إدارة الدفعات</h3><p class="muted">اختر شهر الاشتراك المحتسب لعرض دفعاته فقط، ويمكن تعديل أو حذف أي حركة دفع مسجلة.</p><div class="toolbar"><div class="field"><label for="managePaymentMonth">اختر الشهر</label><select id="managePaymentMonth"></select></div><div class="field"><label>إجمالي دفعات الشهر</label><strong id="managePaymentTotal">0 جنيه</strong></div></div><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الشقة</th><th>الشهر المحتسب</th><th>المبلغ</th><th>ملاحظات</th><th>إجراء</th></tr></thead><tbody id="managePayments"></tbody></table></div></div>
 <div class="card" style="margin-top:14px"><h3>إدارة الاشتراكات الشهرية</h3><p class="muted">يمكن تعديل قيمة الاشتراك أو حذف سجل الشهر إذا لم توجد عليه دفعات.</p><div class="table-wrap"><table><thead><tr><th>الشهر</th><th>الشقة</th><th>المبلغ</th><th>المدفوع</th><th>إجراء</th></tr></thead><tbody id="manageCharges"></tbody></table></div></div>
 <div class="card" style="margin-top:14px"><h3>إدارة المصروفات</h3><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>النوع</th><th>البيان</th><th>المبلغ</th><th>إجراء</th></tr></thead><tbody id="manageExpenses"></tbody></table></div></div>
 </section>
@@ -227,8 +227,15 @@ function renderExpenses(){
 }
 function renderManagement(){
  const aptLabel=id=>{const a=db.apartments.find(x=>x.id===id);return a?aptName(a):String(id)};
- const pays=[...db.payments].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
- document.getElementById('managePayments').innerHTML=pays.map(p=>`<tr><td>${esc(p.date||'')}</td><td>${esc(aptLabel(p.apt))}</td><td>${esc(p.month||'')}</td><td>${money(p.amount)}</td><td>${esc(p.note||'—')}</td><td><div class="row-actions"><button class="small" onclick="editPayment('${p.id}')">تعديل</button><button class="small danger-text" onclick="deletePayment('${p.id}')">حذف</button></div></td></tr>`).join('')||'<tr><td colspan="6" class="empty">لا توجد دفعات</td></tr>';
+ const paymentMonthSelect=document.getElementById('managePaymentMonth');
+ const previousPaymentMonth=paymentMonthSelect.value;
+ const paymentMonths=[...new Set([monthNow(),...db.payments.map(p=>p.month).filter(Boolean)])].sort().reverse();
+ paymentMonthSelect.innerHTML=paymentMonths.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('');
+ paymentMonthSelect.value=paymentMonths.includes(previousPaymentMonth)?previousPaymentMonth:(paymentMonths[0]||'');
+ const selectedPaymentMonth=paymentMonthSelect.value;
+ const pays=db.payments.filter(p=>p.month===selectedPaymentMonth).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ document.getElementById('managePaymentTotal').textContent=money(pays.reduce((sum,p)=>sum+(Number(p.amount)||0),0))+' جنيه';
+ document.getElementById('managePayments').innerHTML=pays.map(p=>`<tr><td>${esc(p.date||'')}</td><td>${esc(aptLabel(p.apt))}</td><td>${esc(p.month||'')}</td><td>${money(p.amount)}</td><td>${esc(p.note||'—')}</td><td><div class="row-actions"><button class="small" onclick="editPayment('${p.id}')">تعديل</button><button class="small danger-text" onclick="deletePayment('${p.id}')">حذف</button></div></td></tr>`).join('')||'<tr><td colspan="6" class="empty">لا توجد دفعات لهذا الشهر</td></tr>';
  const charges=[...db.charges].sort((a,b)=>b.month.localeCompare(a.month)||String(a.apt).localeCompare(String(b.apt)));
  document.getElementById('manageCharges').innerHTML=charges.map(ch=>`<tr><td>${esc(ch.month)}</td><td>${esc(aptLabel(ch.apt))}</td><td>${money(ch.amount)}</td><td>${money(paidFor(ch.apt,ch.month))}</td><td><div class="row-actions"><button class="small" onclick="editCharge('${ch.id}')">تعديل</button><button class="small danger-text" onclick="deleteCharge('${ch.id}')">حذف</button></div></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد اشتراكات مسجلة</td></tr>';
  const expenses=[...db.expenses].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
@@ -358,6 +365,7 @@ alert(n?`تم إنشاء مستحقات ${m} لعدد ${n} شقة`:'مستحقا
 document.getElementById('month').onchange=render;
 document.getElementById('expDate').value=localDate();
 document.getElementById('expenseMonth').onchange=renderExpenses;
+document.getElementById('managePaymentMonth').onchange=renderManagement;
 document.getElementById('addExpense').onclick=()=>{
 const date=document.getElementById('expDate').value,amount=Number(document.getElementById('expAmount').value);
 if(!date||!(amount>0)){alert('أدخل التاريخ والمبلغ');return}
