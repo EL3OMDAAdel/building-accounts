@@ -37,6 +37,13 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 @media print{body *{visibility:hidden!important}#receiptModal,#receiptModal *{visibility:visible!important}#receiptModal{display:block!important;position:absolute;inset:0;background:#fff;padding:0}#receiptModal .dialog{width:100%;max-width:none;max-height:none;box-shadow:none;border:0;padding:0}#receiptModal .no-print{display:none!important}.receipt-paper{border:0}}
 @media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}header h1{font-size:22px}.wrap{margin-top:12px}.card{padding:13px}}
 
+/* تعميم الإضاءة المتحركة على جميع خانات وبطاقات البرنامج */
+.card:not(.stat-glow-green):not(.stat-glow-red){animation:allCardsPulse 3.6s ease-in-out infinite;box-shadow:0 0 5px #16a34a20,0 0 12px #16a34a10;transition:box-shadow .3s ease,border-color .3s ease;}
+.card:not(.stat-glow-green):not(.stat-glow-red):hover{box-shadow:0 0 10px #16a34a40,0 0 20px #16a34a20;border-color:#86c5a2;}
+input:not([type="checkbox"]):not([type="radio"]),select,textarea{border-color:#a8cbb8;box-shadow:0 0 4px #16a34a22;transition:box-shadow .35s ease,border-color .35s ease;}
+input:not([type="checkbox"]):not([type="radio"]):focus,select:focus,textarea:focus{border-color:#16a34a;box-shadow:0 0 0 3px #22c55e22,0 0 12px #22c55e55;outline:none;}
+@keyframes allCardsPulse{0%,100%{box-shadow:0 0 4px #16a34a18,0 0 10px #16a34a0c}50%{box-shadow:0 0 9px #16a34a35,0 0 18px #16a34a18}}
+@media(prefers-reduced-motion:reduce){.card{animation:none!important}}
 /* ألوان وإضاءة خفيفة متحركة لخانات الرصيد والتحصيل */
 .stat-glow-green,.stat-glow-red{position:relative;isolation:isolate;overflow:hidden;border-width:1.5px;}
 .stat-glow-green{border-color:#16a34a;box-shadow:0 0 8px #22c55e55,0 0 18px #22c55e22;animation:greenPulse 2.8s ease-in-out infinite;}
