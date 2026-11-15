@@ -59,7 +59,7 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 </section>
 <section id="apartments"><div class="card"><h3>بيانات الشقق</h3><p class="muted">21 شقة موزعة على 7 أدوار، ويمكن إضافة اسم المالك أو الساكن ورقم الهاتف.</p><div class="table-wrap"><table><thead><tr><th>الشقة</th><th>الاشتراك الشهري</th><th>اسم المالك / الساكن</th><th>رقم الهاتف</th><th>إجراء</th></tr></thead><tbody id="aptBody"></tbody></table></div></div></section>
 <section id="aptPage"><div class="toolbar"><button id="backToApartments">← العودة إلى الشقق</button><button class="primary" id="aptPagePay">تسجيل دفعة لهذه الشقة</button></div><div class="card"><h2 id="aptPageTitle">حساب الشقة</h2><p class="muted" id="aptPageContact"></p><div class="field" style="margin:12px 0"><label for="aptPageNotes">ملاحظات خاصة بالشقة</label><textarea id="aptPageNotes" rows="4" placeholder="اكتب أي ملاحظات تخص الشقة هنا..."></textarea></div><div class="stats"><div class="card stat"><small>إجمالي المستحق</small><strong id="aptTotalDue">0</strong></div><div class="card stat"><small>إجمالي المدفوع</small><strong id="aptTotalPaid">0</strong></div><div class="card stat"><small>المتبقي</small><strong id="aptTotalDebt">0</strong></div></div></div><div class="card" style="margin-top:14px"><h3>كشف الاشتراكات شهر بشهر</h3><div class="table-wrap"><table><thead><tr><th>الشهر</th><th>الاشتراك</th><th>المدفوع</th><th>المتبقي</th><th>الحالة</th></tr></thead><tbody id="aptPageMonths"></tbody></table></div></div><div class="card" style="margin-top:14px"><h3>سجل دفعات الشقة</h3><div class="table-wrap"><table><thead><tr><th>تاريخ الدفع</th><th>الشهر المحتسب</th><th>المبلغ</th><th>ملاحظات</th><th>الإيصال</th></tr></thead><tbody id="aptPagePayments"></tbody></table></div></div></section>
-<section id="expenses"><div class="card"><h3>تسجيل مصروف جديد</h3><div class="toolbar"><div class="field"><label>التاريخ</label><input type="date" id="expDate"></div><div class="field"><label>نوع المصروف</label><select id="expType"><option>كهرباء</option><option>أسانسير</option><option>نظافة</option><option>صيانة</option><option>مياه</option><option>أخرى</option></select></div><div class="field"><label>المبلغ بالجنيه</label><input type="number" id="expAmount" min="0.01" step="0.01" placeholder="المبلغ"></div><div class="field"><label>البيان</label><input id="expNote" placeholder="تفاصيل المصروف"></div><button class="primary" id="addExpense">حفظ المصروف</button></div></div><div class="card" style="margin-top:14px"><h3>سجل المصروفات</h3><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>النوع</th><th>البيان</th><th>المبلغ</th><th>إجراء</th></tr></thead><tbody id="expBody"></tbody></table></div></div></section>
+<section id="expenses"><div class="card"><h3>تسجيل مصروف جديد</h3><div class="toolbar"><div class="field"><label>التاريخ</label><input type="date" id="expDate"></div><div class="field"><label>نوع المصروف</label><select id="expType"><option>كهرباء</option><option>أسانسير</option><option>نظافة</option><option>صيانة</option><option>مياه</option><option>أخرى</option></select></div><div class="field"><label>المبلغ بالجنيه</label><input type="number" id="expAmount" min="0.01" step="0.01" placeholder="المبلغ"></div><div class="field"><label>البيان</label><input id="expNote" placeholder="تفاصيل المصروف"></div><button class="primary" id="addExpense">حفظ المصروف</button></div></div><div class="card" style="margin-top:14px"><h3>مصروفات كل شهر</h3><div class="toolbar"><div class="field"><label for="expenseMonth">اختر الشهر</label><select id="expenseMonth"></select></div><div class="field"><label>إجمالي مصروفات الشهر</label><strong id="expenseMonthTotal">0 جنيه</strong></div></div><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>النوع</th><th>البيان</th><th>المبلغ</th><th>إجراء</th></tr></thead><tbody id="expBody"></tbody></table></div></div></section>
 <section id="reports">
 <div class="grid2">
   <div class="card"><h3>ملخص الحسابات</h3><p>إجمالي التحصيل: <b id="rPaid">0</b> ج.م</p><p>إجمالي المصروفات: <b id="rExp">0</b> ج.م</p><p>صافي الرصيد: <b id="rBalance">0</b> ج.م</p><p>إجمالي المديونيات: <b id="rDebt">0</b> ج.م</p></div>
@@ -184,9 +184,7 @@ document.getElementById('aptBody').innerHTML=db.apartments.map(a=>
   `<tr><td>${aptName(a)}</td><td>${fee(a,m)} جنيه</td><td><input aria-label="الاسم" value="${esc(a.name)}" onchange="updateApt('${a.id}','name',this.value)" placeholder="اسم المالك أو الساكن"></td><td><input aria-label="رقم الهاتف" value="${esc(a.phone)}" onchange="updateApt('${a.id}','phone',this.value)" placeholder="رقم الهاتف"></td><td><button class="small" onclick="showAptPage('${a.id}')">فتح صفحة الشقة</button></td></tr>`
 ).join('');
 
-document.getElementById('expBody').innerHTML=db.expenses.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(e=>
-  `<tr><td>${esc(e.date||'')}</td><td>${esc(e.type||'')}</td><td>${esc(e.note||'—')}</td><td>${money(e.amount)}</td><td><button class="small danger-text" onclick="deleteExpense('${e.id}')">حذف</button></td></tr>`
-).join('')||'<tr><td colspan="5" class="empty">لا توجد مصروفات</td></tr>';
+renderExpenses();
 
 document.getElementById('rPaid').textContent=money(totalPaid);
 document.getElementById('rExp').textContent=money(exp);
@@ -200,6 +198,17 @@ document.getElementById('debtBody').innerHTML=db.apartments.map(a=>{
   renderManagement();
 }
 
+function renderExpenses(){
+ const monthSelect=document.getElementById('expenseMonth');if(!monthSelect)return;
+ const months=[...new Set([localDate().slice(0,7),...db.expenses.map(e=>(e.date||'').slice(0,7)).filter(Boolean)])].sort().reverse();
+ const previous=monthSelect.value;
+ monthSelect.innerHTML=months.map(m=>`<option value="${m}">${m}</option>`).join('');
+ monthSelect.value=months.includes(previous)?previous:(months[0]||'');
+ const selected=monthSelect.value;
+ const expenses=db.expenses.filter(e=>(e.date||'').slice(0,7)===selected).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ document.getElementById('expenseMonthTotal').textContent=money(expenses.reduce((sum,e)=>sum+(Number(e.amount)||0),0))+' جنيه';
+ document.getElementById('expBody').innerHTML=expenses.map(e=>`<tr><td>${esc(e.date||'')}</td><td>${esc(e.type||'')}</td><td>${esc(e.note||'—')}</td><td>${money(e.amount)}</td><td><button class="small danger-text" onclick="deleteExpense('${e.id}')">حذف</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد مصروفات لهذا الشهر</td></tr>';
+}
 function renderManagement(){
  const aptLabel=id=>{const a=db.apartments.find(x=>x.id===id);return a?aptName(a):String(id)};
  const pays=[...db.payments].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
@@ -328,6 +337,7 @@ alert(n?`تم إنشاء مستحقات ${m} لعدد ${n} شقة`:'مستحقا
 };
 document.getElementById('month').onchange=render;
 document.getElementById('expDate').value=localDate();
+document.getElementById('expenseMonth').onchange=renderExpenses;
 document.getElementById('addExpense').onclick=()=>{
 const date=document.getElementById('expDate').value,amount=Number(document.getElementById('expAmount').value);
 if(!date||!(amount>0)){alert('أدخل التاريخ والمبلغ');return}
