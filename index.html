@@ -169,6 +169,7 @@ async function initCloudAuth(){
   logout.style.display=user?'inline-block':'none';
   document.getElementById('cloudTestBtn').style.display=user?'inline-block':'none';
   document.getElementById('cloudUploadBtn').style.display=user?'inline-block':'none';
+  document.getElementById('cloudRestoreBtn').style.display=user?'inline-block':'none';
   status.textContent=user?'تم تسجيل الدخول بنجاح بالحساب المخصص. لم يتم رفع بيانات بعد.':'لم يتم تسجيل الدخول. بياناتك الحالية تظل محفوظة على هذا الجهاز.';
  };
  const {data,error}=await cloudClient.auth.getSession();
