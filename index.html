@@ -37,6 +37,20 @@ th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:au
 @media print{body *{visibility:hidden!important}#receiptModal,#receiptModal *{visibility:visible!important}#receiptModal{display:block!important;position:absolute;inset:0;background:#fff;padding:0}#receiptModal .dialog{width:100%;max-width:none;max-height:none;box-shadow:none;border:0;padding:0}#receiptModal .no-print{display:none!important}.receipt-paper{border:0}}
 @media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}header h1{font-size:22px}.wrap{margin-top:12px}.card{padding:13px}}
 
+
+/* إضاءة أوضح لكل البطاقات وخانات الإدخال */
+.card{animation:universalCardGlow 2.7s ease-in-out infinite!important;box-shadow:0 0 0 1px #31b56b55,0 0 10px #31b56b35,0 0 20px #31b56b18!important;transition:box-shadow .25s ease,border-color .25s ease!important;}
+.card:hover{box-shadow:0 0 0 2px #31b56b88,0 0 15px #31b56b66,0 0 25px #31b56b30!important;}
+input:not([type="checkbox"]):not([type="radio"]),select,textarea{border:1px solid #83bd9a!important;box-shadow:0 0 5px #31b56b35,0 0 10px #31b56b18!important;animation:universalFieldGlow 2.4s ease-in-out infinite!important;}
+input:not([type="checkbox"]):not([type="radio"]):focus,select:focus,textarea:focus{border-color:#16a34a!important;box-shadow:0 0 0 3px #22c55e30,0 0 15px #22c55e70!important;}
+@keyframes universalCardGlow{0%,100%{box-shadow:0 0 0 1px #31b56b44,0 0 7px #31b56b28,0 0 13px #31b56b12}50%{box-shadow:0 0 0 2px #31b56b88,0 0 15px #31b56b60,0 0 24px #31b56b30}}
+@keyframes universalFieldGlow{0%,100%{box-shadow:0 0 4px #31b56b22,0 0 7px #31b56b12}50%{box-shadow:0 0 8px #31b56b55,0 0 14px #31b56b28}}
+/* إجمالي الخصومات رمادي فاتح جدًا وبدون إضاءة */
+.deduct-total-soft{background:#f7f7f7!important;border:1px solid #eeeeee!important;box-shadow:none!important;animation:none!important;}
+.deduct-total-soft small{color:#a0a0a0!important;}
+.deduct-total-soft strong{color:#8d8d8d!important;text-shadow:none!important;}
+@media(prefers-reduced-motion:reduce){.card,input,select,textarea{animation:none!important}}
+
 /* تعميم الإضاءة المتحركة على جميع خانات وبطاقات البرنامج */
 .card:not(.stat-glow-green):not(.stat-glow-red){animation:allCardsPulse 3.6s ease-in-out infinite;box-shadow:0 0 5px #16a34a20,0 0 12px #16a34a10;transition:box-shadow .3s ease,border-color .3s ease;}
 .card:not(.stat-glow-green):not(.stat-glow-red):hover{box-shadow:0 0 10px #16a34a40,0 0 20px #16a34a20;border-color:#86c5a2;}
@@ -66,7 +80,7 @@ input:not([type="checkbox"]):not([type="radio"]):focus,select:focus,textarea:foc
 <div class="card stat"><small>إجمالي المصروفات</small><strong id="sExpense">0 ج.م</strong></div>
 <div class="card stat"><small>المرحل من السنة الماضية (جنيه)</small><input id="carryForwardInput" type="number" step="0.01" value="0" aria-label="المرحل من السنة الماضية" style="font-size:20px;font-weight:750;margin-top:7px;color:var(--ink)"></div>
 <div class="card stat"><small>مبالغ إضافية تضاف للرصيد (جنيه)</small><input id="extraAddInput" type="number" step="0.01" value="0" aria-label="مبالغ إضافية تضاف للرصيد" style="font-size:20px;font-weight:750;margin-top:7px;color:var(--ink)"></div>
-<div class="card stat"><small>إجمالي مبالغ الخصم (جنيه)</small><strong id="sExtraDeduct">0</strong></div>
+<div class="card stat deduct-total-soft"><small>إجمالي مبالغ الخصم (جنيه)</small><strong id="sExtraDeduct">0</strong></div>
 <div class="card stat stat-glow-green"><small>الرصيد الحالي بعد المصروفات والإضافات والخصومات</small><strong id="sBalance">0 ج.م</strong></div>
 </div>
 <div class="card" style="margin-top:14px"><h3>تسجيل مبالغ تخصم من الرصيد</h3><p class="muted">أضف كل خصم كبند مستقل مع ملاحظة توضح سببه. جميع البنود تُجمع تلقائياً في إجمالي الخصومات.</p><div class="toolbar"><div class="field"><label for="extraDeductAmount">المبلغ بالجنيه</label><input id="extraDeductAmount" type="number" min="0.01" step="0.01" placeholder="المبلغ"></div><div class="field"><label for="extraDeductNote">ملاحظات / سبب الخصم</label><input id="extraDeductNote" placeholder="اكتب سبب الخصم"></div><button class="primary" id="addExtraDeduct">إضافة الخصم</button></div><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>الملاحظات</th><th>إجراء</th></tr></thead><tbody id="extraDeductBody"></tbody></table></div></div>
