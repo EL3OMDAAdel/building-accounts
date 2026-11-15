@@ -98,6 +98,7 @@ textarea{background:linear-gradient(110deg,#fff 0%,#fff7db 40%,#fff 75%)!importa
 </div>
 <button id="cloudLogoutBtn" type="button" style="display:none">تسجيل الخروج</button>
 <button id="cloudTestBtn" type="button" style="display:none;margin-right:6px">اختبار الاتصال بقاعدة البيانات</button>
+<button id="cloudUploadBtn" class="primary" type="button" style="display:none;margin-right:6px">رفع نسخة هذا الجهاز للسحابة</button>
 <p class="muted">تسجيل الدخول وحده لا يرفع أو يغيّر أي بيانات. سنختبر الاتصال أولاً قبل تفعيل المزامنة.</p>
 </div>
 <div class="stats">
@@ -166,6 +167,7 @@ async function initCloudAuth(){
   fields.style.display=user?'none':'block';
   logout.style.display=user?'inline-block':'none';
   document.getElementById('cloudTestBtn').style.display=user?'inline-block':'none';
+  document.getElementById('cloudUploadBtn').style.display=user?'inline-block':'none';
   status.textContent=user?'تم تسجيل الدخول بنجاح بالحساب المخصص. لم يتم رفع بيانات بعد.':'لم يتم تسجيل الدخول. بياناتك الحالية تظل محفوظة على هذا الجهاز.';
  };
  const {data,error}=await cloudClient.auth.getSession();
@@ -194,6 +196,34 @@ async function initCloudAuth(){
    status.textContent=data?'الاتصال بقاعدة البيانات ناجح. يوجد سجل سحابي بالفعل؛ لم نقرأ محتواه أو نغيّره.':'الاتصال بقاعدة البيانات ناجح. لا يوجد سجل سحابي لهذا الحساب حتى الآن. لم يتم رفع أو تعديل أي بيانات.';
   }catch(e){status.textContent='فشل اختبار الاتصال: '+(e.message||'خطأ غير معروف')+'. لم يتم رفع أو تعديل أي بيانات.';}
   finally{test.disabled=false;test.textContent='إعادة اختبار الاتصال بقاعدة البيانات';}
+ };
+ document.getElementById('cloudUploadBtn').onclick=async()=>{
+  const btn=document.getElementById('cloudUploadBtn');
+  if(!cloudClient){status.textContent='الاتصال غير مهيأ.';return;}
+  btn.disabled=true;btn.textContent='جارٍ فحص البيانات...';
+  try{
+   const {data:sessionData,error:sessionError}=await cloudClient.auth.getSession();
+   if(sessionError)throw sessionError;
+   if(sessionData.session?.user?.id!==EXPECTED_CLOUD_USER)throw new Error('يجب تسجيل الدخول بالحساب المخصص أولاً.');
+   const raw=localStorage.getItem(KEY);
+   if(!raw)throw new Error('لم نعثر على بيانات محفوظة على هذا الجهاز.');
+   const localData=JSON.parse(raw);
+   if(!localData||!Array.isArray(localData.apartments)||localData.apartments.length!==21||!Array.isArray(localData.charges)||!Array.isArray(localData.payments)||!Array.isArray(localData.expenses))throw new Error('بنية البيانات غير مكتملة؛ أوقفنا الرفع للحماية.');
+   const chargeCount=localData.charges.length,paymentCount=localData.payments.length,expenseCount=localData.expenses.length;
+   const paidTotal=localData.payments.reduce((s,p)=>s+(Number(p.amount)||0),0);
+   const expenseTotal=localData.expenses.reduce((s,e)=>s+(Number(e.amount)||0),0);
+   const summary='مراجعة قبل الرفع:\n- الشقق: 21\n- الاشتراكات: '+chargeCount+'\n- الدفعات: '+paymentCount+' (إجمالي '+paidTotal.toLocaleString('en-US')+' جنيه)\n- المصروفات: '+expenseCount+' (إجمالي '+expenseTotal.toLocaleString('en-US')+' جنيه)\n\nسيتم رفع نسخة هذا الجهاز فقط. لن يتم دمج البيانات أو تغيير بيانات الجهاز. هل توافق؟';
+   status.textContent='تم فحص البيانات. في انتظار موافقتك الصريحة على الرفع.';
+   if(!confirm(summary))return;
+   const {data:existing,error:checkError}=await cloudClient.from('building_data').select('owner_id,updated_at').eq('owner_id',EXPECTED_CLOUD_USER).maybeSingle();
+   if(checkError)throw checkError;
+   if(existing){status.textContent='توقّف الرفع للحماية: توجد نسخة سحابية بالفعل بتاريخ '+(existing.updated_at||'غير محدد')+'. لم نغيّرها.';return;}
+   const {error:insertError}=await cloudClient.from('building_data').insert({owner_id:EXPECTED_CLOUD_USER,data:localData,updated_at:new Date().toISOString()});
+   if(insertError)throw insertError;
+   status.textContent='تم رفع نسخة هذا الجهاز بنجاح إلى السحابة بتاريخ '+new Date().toLocaleString('ar-EG')+'. لم يتم تعديل البيانات المحلية.';
+  }catch(e){status.textContent='لم يكتمل الرفع: '+(e.message||'خطأ غير معروف')+'. لم يتم استبدال أي نسخة سحابية.';}
+  finally{btn.disabled=false;btn.textContent='رفع نسخة هذا الجهاز للسحابة';}
+ };
  };
 }
 const KEY='buildingAccountsV1';
