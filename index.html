@@ -99,6 +99,7 @@ textarea{background:linear-gradient(110deg,#fff 0%,#fff7db 40%,#fff 75%)!importa
 <button id="cloudLogoutBtn" type="button" style="display:none">تسجيل الخروج</button>
 <button id="cloudTestBtn" type="button" style="display:none;margin-right:6px">اختبار الاتصال بقاعدة البيانات</button>
 <button id="cloudUploadBtn" class="primary" type="button" style="display:none;margin-right:6px">رفع نسخة هذا الجهاز للسحابة</button>
+<button id="cloudRestoreBtn" type="button" style="display:none;margin-right:6px;background:#8b2f2f;color:white">استعادة البيانات السحابية على هذا الجهاز</button>
 <p class="muted">تسجيل الدخول وحده لا يرفع أو يغيّر أي بيانات. سنختبر الاتصال أولاً قبل تفعيل المزامنة.</p>
 </div>
 <div class="stats">
@@ -224,6 +225,38 @@ async function initCloudAuth(){
   }catch(e){status.textContent='لم يكتمل الرفع: '+(e.message||'خطأ غير معروف')+'. لم يتم استبدال أي نسخة سحابية.';}
   finally{btn.disabled=false;btn.textContent='رفع نسخة هذا الجهاز للسحابة';}
  };
+ document.getElementById('cloudRestoreBtn').onclick=async()=>{
+  const btn=document.getElementById('cloudRestoreBtn');
+  if(!cloudClient){status.textContent='الاتصال غير مهيأ.';return;}
+  btn.disabled=true;btn.textContent='جارٍ فحص النسخة السحابية...';
+  try{
+   const {data:sessionData,error:sessionError}=await cloudClient.auth.getSession();
+   if(sessionError)throw sessionError;
+   if(sessionData.session?.user?.id!==EXPECTED_CLOUD_USER)throw new Error('يجب تسجيل الدخول بالحساب المخصص أولاً.');
+   const localRaw=localStorage.getItem(KEY);
+   if(!localRaw)throw new Error('لم نعثر على نسخة محلية حالية. أوقفنا الاستعادة للحماية.');
+   const localData=JSON.parse(localRaw);
+   if(!localData||!Array.isArray(localData.apartments)||localData.apartments.length!==21||!Array.isArray(localData.charges)||!Array.isArray(localData.payments)||!Array.isArray(localData.expenses))throw new Error('النسخة المحلية الحالية غير مكتملة؛ أوقفنا الاستعادة.');
+   status.textContent='جارٍ قراءة النسخة السحابية وفحصها فقط؛ لم يتم تغيير بيانات الجهاز...';
+   const {data:cloudRow,error:readError}=await cloudClient.from('building_data').select('owner_id,data,updated_at').eq('owner_id',EXPECTED_CLOUD_USER).maybeSingle();
+   if(readError)throw readError;
+   if(!cloudRow||!cloudRow.data)throw new Error('لا توجد نسخة سحابية قابلة للاستعادة.');
+   const cloudData=cloudRow.data;
+   if(!Array.isArray(cloudData.apartments)||cloudData.apartments.length!==21||!Array.isArray(cloudData.charges)||!Array.isArray(cloudData.payments)||!Array.isArray(cloudData.expenses))throw new Error('بنية النسخة السحابية غير مكتملة؛ لم نغيّر بيانات الجهاز.');
+   const sum=(arr)=>arr.reduce((n,x)=>n+(Number(x.amount)||0),0);
+   const cloudPaid=sum(cloudData.payments),cloudExpenses=sum(cloudData.expenses);
+   const localPaid=sum(localData.payments),localExpenses=sum(localData.expenses);
+   const summary='مراجعة قبل الاستعادة:\nالنسخة السحابية بتاريخ: '+(cloudRow.updated_at||'غير محدد')+'\n\nالنسخة السحابية:\n- الشقق: 21\n- الاشتراكات: '+cloudData.charges.length+'\n- الدفعات: '+cloudData.payments.length+' (إجمالي '+cloudPaid.toLocaleString('en-US')+' جنيه)\n- المصروفات: '+cloudData.expenses.length+' (إجمالي '+cloudExpenses.toLocaleString('en-US')+' جنيه)\n\nالنسخة المحلية الحالية:\n- الدفعات: '+localData.payments.length+' (إجمالي '+localPaid.toLocaleString('en-US')+' جنيه)\n- المصروفات: '+localData.expenses.length+' (إجمالي '+localExpenses.toLocaleString('en-US')+' جنيه)\n\nسيتم حفظ نسخة احتياطية محلية من بيانات هذا الجهاز أولاً، ثم استبدال بياناته بالنسخة السحابية. لن يتم دمج النسختين ولن تتغير النسخة السحابية. هل توافق على الاستعادة؟';
+   status.textContent='تم فحص النسختين. في انتظار موافقتك الصريحة على الاستعادة.';
+   if(!confirm(summary))return;
+   localStorage.setItem('buildingAccountsPreCloudRestoreBackup',localRaw);
+   localStorage.setItem(KEY,JSON.stringify(cloudData));
+   status.textContent='تمت الاستعادة على هذا الجهاز. جارٍ إعادة تحميل التطبيق لعرض البيانات المستعادة...';
+   location.reload();
+  }catch(e){status.textContent='لم تتم الاستعادة: '+(e.message||'خطأ غير معروف')+'. بيانات الجهاز لم تُستبدل.';}
+  finally{btn.disabled=false;btn.textContent='استعادة البيانات السحابية على هذا الجهاز';}
+ };
+
 }
 const KEY='buildingAccountsV1';
 const defaultData={apartments:[],charges:[],payments:[],expenses:[],carryForward:0,extraAdd:0,extraDeduct:0};
