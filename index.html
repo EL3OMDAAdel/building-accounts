@@ -280,6 +280,9 @@ table tbody tr[style*="background"] td button,
 #extraDeductModal .dialog .card small,#extraDeductModal .dialog .card strong{color:#f9fafb}
 
 
+.apt-debt-whatsapp{background:#128c7e!important;color:#fff!important;font-weight:800;border:1px solid #25d366!important;box-shadow:0 3px 12px #0005}
+.apt-debt-whatsapp:active{background:#075e54!important}
+
 /* الرصيد الحالي وأيقونة الخصومات بعرض الواجهة بالكامل */
 .stats>.balance-wide{grid-column:1/-1;width:100%;box-sizing:border-box;min-height:92px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .stats>.balance-wide strong{font-size:28px}
@@ -359,7 +362,7 @@ table tbody tr[style*="background"] td button,
 <div class="card" style="margin-top:14px"><h3>آخر الدفعات</h3><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الشقة</th><th>المبلغ</th><th>ملاحظات</th></tr></thead><tbody id="recentPayments"></tbody></table></div></div>
 </section>
 <section id="apartments"><div class="card"><h3>بيانات الشقق</h3><p class="muted">21 شقة موزعة على 7 أدوار، ويمكن إضافة اسم المالك أو الساكن ورقم الهاتف.</p><div class="table-wrap"><table><thead><tr><th>اسم صاحب الشقة</th><th>الاشتراك الشهري</th><th>تعديل الاسم</th><th>رقم الهاتف</th><th>إجراء</th></tr></thead><tbody id="aptBody"></tbody></table></div></div></section>
-<section id="aptPage"><div class="toolbar"><button id="backToApartments">← العودة إلى الشقق</button><button class="primary" id="aptPagePay">تسجيل دفعة لهذه الشقة</button></div><div class="card"><h2 id="aptPageTitle">حساب الشقة</h2><p class="muted" id="aptPageContact"></p><div class="field" style="margin:12px 0"><label for="aptPageNotes">ملاحظات خاصة بالشقة</label><textarea id="aptPageNotes" rows="4" placeholder="اكتب أي ملاحظات تخص الشقة هنا..."></textarea></div><div class="stats"><div class="card stat"><small>إجمالي المستحق</small><strong id="aptTotalDue">0</strong></div><div class="card stat"><small>إجمالي المدفوع</small><strong id="aptTotalPaid">0</strong></div><div class="card stat"><small>المتبقي</small><strong id="aptTotalDebt">0</strong></div></div></div><div class="card" style="margin-top:14px"><h3>كشف الاشتراكات شهر بشهر</h3><div class="table-wrap"><table><thead><tr><th>الشهر</th><th>الاشتراك</th><th>المدفوع</th><th>المتبقي</th><th>الحالة</th></tr></thead><tbody id="aptPageMonths"></tbody></table></div></div><div class="card" style="margin-top:14px"><h3>سجل دفعات الشقة</h3><div class="table-wrap"><table><thead><tr><th>تاريخ الدفع</th><th>الشهر المحتسب</th><th>المبلغ</th><th>ملاحظات</th><th>الإيصال</th></tr></thead><tbody id="aptPagePayments"></tbody></table></div></div></section>
+<section id="aptPage"><div class="toolbar"><button id="backToApartments">← العودة إلى الشقق</button><button class="primary" id="aptPagePay">تسجيل دفعة لهذه الشقة</button><button type="button" class="apt-debt-whatsapp" id="aptPageDebtWhatsApp">📲 إرسال المديونية على واتساب</button></div><div class="card"><h2 id="aptPageTitle">حساب الشقة</h2><p class="muted" id="aptPageContact"></p><div class="field" style="margin:12px 0"><label for="aptPageNotes">ملاحظات خاصة بالشقة</label><textarea id="aptPageNotes" rows="4" placeholder="اكتب أي ملاحظات تخص الشقة هنا..."></textarea></div><div class="stats"><div class="card stat"><small>إجمالي المستحق</small><strong id="aptTotalDue">0</strong></div><div class="card stat"><small>إجمالي المدفوع</small><strong id="aptTotalPaid">0</strong></div><div class="card stat"><small>المتبقي</small><strong id="aptTotalDebt">0</strong></div></div></div><div class="card" style="margin-top:14px"><h3>كشف الاشتراكات شهر بشهر</h3><div class="table-wrap"><table><thead><tr><th>الشهر</th><th>الاشتراك</th><th>المدفوع</th><th>المتبقي</th><th>الحالة</th></tr></thead><tbody id="aptPageMonths"></tbody></table></div></div><div class="card" style="margin-top:14px"><h3>سجل دفعات الشقة</h3><div class="table-wrap"><table><thead><tr><th>تاريخ الدفع</th><th>الشهر المحتسب</th><th>المبلغ</th><th>ملاحظات</th><th>الإيصال</th></tr></thead><tbody id="aptPagePayments"></tbody></table></div></div></section>
 <section id="expenses"><div class="card"><h3>تسجيل مصروف جديد</h3><div class="toolbar"><div class="field"><label>التاريخ</label><input type="date" id="expDate"></div><div class="field"><label>نوع المصروف</label><select id="expType"><option>كهرباء</option><option>أسانسير</option><option>نظافة</option><option>صيانة</option><option>مياه</option><option>أخرى</option></select></div><div class="field"><label>المبلغ بالجنيه</label><input type="number" id="expAmount" min="0.01" step="0.01" placeholder="المبلغ"></div><div class="field"><label>البيان</label><input id="expNote" placeholder="تفاصيل المصروف"></div><button class="primary" id="addExpense">حفظ المصروف</button></div></div><div class="card" style="margin-top:14px"><h3>مصروفات كل شهر</h3><div class="toolbar"><div class="field"><label for="expenseMonth">اختر الشهر</label><select id="expenseMonth"></select></div><div class="field"><label>إجمالي مصروفات الشهر</label><strong id="expenseMonthTotal">0 جنيه</strong></div></div><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>النوع</th><th>البيان</th><th>المبلغ</th><th>إجراء</th></tr></thead><tbody id="expBody"></tbody></table></div></div></section>
 <section id="reports">
 <div class="grid2">
@@ -866,6 +869,7 @@ document.getElementById('modal').classList.add('open');
 }
 document.getElementById('backToApartments').onclick=()=>{document.querySelectorAll('section').forEach(x=>x.classList.toggle('active',x.id==='apartments'));document.querySelectorAll('.tab[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab==='apartments'));};
 document.getElementById('aptPagePay').onclick=()=>{if(currentApt)openPay(currentApt)};
+document.getElementById('aptPageDebtWhatsApp').onclick=()=>{if(currentApt)sendAptDebtWhatsApp(currentApt)};
 document.getElementById('aptPageNotes').oninput=e=>{const a=db.apartments.find(x=>x.id===currentApt);if(a){a.notes=e.target.value;localStorage.setItem(KEY,JSON.stringify(db));}};
 document.getElementById('modalSave').onclick=()=>{
 const amount=Number(document.getElementById('payAmount').value),date=document.getElementById('payDate').value,note=document.getElementById('payNote').value;
@@ -947,6 +951,35 @@ try{
 };
 document.getElementById('receiptPrint').onclick=()=>window.print();
 document.getElementById('receiptClose').onclick=()=>document.getElementById('receiptModal').classList.remove('open');
+function sendAptDebtWhatsApp(id){
+ const a=db.apartments.find(x=>x.id===id);if(!a)return;
+ const charges=db.charges.filter(c=>c.apt===id).slice().sort((x,y)=>(x.month||'').localeCompare(y.month||''));
+ const rows=charges.map(c=>{const due=Number(c.amount)||0,paid=paidFor(id,c.month),remaining=due-paid;return {month:c.month,due,paid,remaining};}).filter(x=>x.remaining>0);
+ const totalDue=charges.reduce((s,c)=>s+(Number(c.amount)||0),0);
+ const totalPaid=db.payments.filter(p=>p.apt===id).reduce((s,p)=>s+(Number(p.amount)||0),0);
+ const totalDebt=totalDue-totalPaid;
+ if(totalDebt<=0){alert('لا توجد مديونية مستحقة على هذه الشقة حالياً.');return;}
+ const lines=[
+  '🏢 *حسابات العمارة*',
+  '📌 *بيان المديونية المستحقة*',
+  'الشقة: '+aptName(a),
+  'اسم الساكن: '+(a.name||'غير مسجل'),
+  'التاريخ: '+localDate(),
+  '',
+  '*تفاصيل الشهور المستحقة:*',
+  ...rows.map(x=>'• '+x.month+' — الاشتراك: '+money(x.due)+' ج.م، المدفوع: '+money(x.paid)+' ج.م، المتبقي: '+money(x.remaining)+' ج.م'),
+  '',
+  'إجمالي المستحق: '+money(totalDue)+' جنيه',
+  'إجمالي المدفوع: '+money(totalPaid)+' جنيه',
+  '*إجمالي المديونية المتبقية: '+money(totalDebt)+' جنيه*',
+  '',
+  'نرجو التكرم بسداد المبلغ المستحق، وشكراً لتعاونكم.'
+ ];
+ const text=lines.join('\n');
+ const phone=String(a.phone||'').replace(/[^0-9]/g,'');
+ const url=phone?'https://wa.me/'+(phone.startsWith('0')?'20'+phone.slice(1):phone)+'?text='+encodeURIComponent(text):'https://wa.me/?text='+encodeURIComponent(text);
+ window.open(url,'_blank','noopener');
+}
 function renderAptPage(id){
 const a=db.apartments.find(x=>x.id===id);if(!a)return;
 const totalDue=db.charges.filter(c=>c.apt===id).reduce((s,c)=>s+(Number(c.amount)||0),0);
