@@ -552,7 +552,7 @@ const rows=groupDefs.map(g=>{
   const items=classified.filter(x=>x.group===g.key);
   if(!items.length)return '';
   const heading=`<tr><td colspan="6" style="background:${g.color};color:${g.text};font-weight:800;padding:12px">${g.title} — ${items.length} شقة</td></tr>`;
-  const body=items.map(({a,due,paid,rem,status})=>`<tr style="background:${floorColor(a.floor)}"><td>${aptOwnerCell(a)}</td><td>${money(due||fee(a,m))}</td><td>${money(paid)}</td><td>${money(rem)}</td><td><span class="pill ${rem===0&&due>0?'':paid>0?'partial':'unpaid'}">${status}</span></td><td><button class="small primary" onclick="openPay('${a.id}')">تسجيل دفعة</button></td></tr>`).join('');
+  const body=items.map(({a,due,paid,rem,status})=>`<tr style="background:${floorColor(a.floor)};color:#18332e"><td>${aptOwnerCell(a)}</td><td>${money(due||fee(a,m))}</td><td>${money(paid)}</td><td>${money(rem)}</td><td><span class="pill ${rem===0&&due>0?'':paid>0?'partial':'unpaid'}">${status}</span></td><td><button class="small primary" onclick="openPay('${a.id}')">تسجيل دفعة</button></td></tr>`).join('');
   return heading+body;
 }).join('');
 document.getElementById('duesBody').innerHTML=rows||'<tr><td colspan="6" class="empty">لا توجد شقق</td></tr>';
@@ -562,11 +562,11 @@ if(summary)summary.innerHTML=groupDefs.map(g=>`<button type="button" class="dues
 const recent=[...db.payments].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,8);
 document.getElementById('recentPayments').innerHTML=recent.length?recent.map(p=>{
   const a=db.apartments.find(a=>a.id===p.apt);
-  return `<tr${a?` style="background:${floorColor(a.floor)}"`:''}><td>${esc(p.date||'')}</td><td>${a?aptOwnerCell(a):esc(p.apt)}</td><td>${money(p.amount)}</td><td>${esc(p.note||'—')}</td></tr>`;
+  return `<tr${a?` style="background:${floorColor(a.floor)};color:#18332e"`:''}><td>${esc(p.date||'')}</td><td>${a?aptOwnerCell(a):esc(p.apt)}</td><td>${money(p.amount)}</td><td>${esc(p.note||'—')}</td></tr>`;
 }).join(''):'<tr><td colspan="4" class="empty">لا توجد دفعات مسجلة</td></tr>';
 
 document.getElementById('aptBody').innerHTML=db.apartments.map(a=>
-  `<tr style="background:${floorColor(a.floor)}"><td>${aptOwnerCell(a)}</td><td>${fee(a,m)} جنيه</td><td><input aria-label="اسم صاحب الشقة" value="${esc(a.name)}" onchange="updateApt('${a.id}','name',this.value)" placeholder="اسم صاحب الشقة"></td><td><input aria-label="رقم الهاتف" value="${esc(a.phone)}" onchange="updateApt('${a.id}','phone',this.value)" placeholder="رقم الهاتف"></td><td><button class="small" onclick="showAptPage('${a.id}')">فتح صفحة الشقة</button></td></tr>`
+  `<tr style="background:${floorColor(a.floor)};color:#18332e"><td>${aptOwnerCell(a)}</td><td>${fee(a,m)} جنيه</td><td><input aria-label="اسم صاحب الشقة" value="${esc(a.name)}" onchange="updateApt('${a.id}','name',this.value)" placeholder="اسم صاحب الشقة"></td><td><input aria-label="رقم الهاتف" value="${esc(a.phone)}" onchange="updateApt('${a.id}','phone',this.value)" placeholder="رقم الهاتف"></td><td><button class="small" onclick="showAptPage('${a.id}')">فتح صفحة الشقة</button></td></tr>`
 ).join('');
 
 renderExpenses();
@@ -581,7 +581,7 @@ document.getElementById('rDebt').textContent=money(debt);
 document.getElementById('debtBody').innerHTML=db.apartments.map(a=>{
   const due=db.charges.filter(c=>c.apt===a.id).reduce((s,c)=>s+(Number(c.amount)||0),0);
   const p=db.payments.filter(p=>p.apt===a.id).reduce((s,p)=>s+(Number(p.amount)||0),0);
-  return `<tr style="background:${floorColor(a.floor)}"><td>${aptOwnerCell(a)}</td><td>${money(due)}</td><td>${money(p)}</td><td>${money(due-p)}</td></tr>`;
+  return `<tr style="background:${floorColor(a.floor)};color:#18332e"><td>${aptOwnerCell(a)}</td><td>${money(due)}</td><td>${money(p)}</td><td>${money(due-p)}</td></tr>`;
 }).join('');
   renderManagement();
 }
