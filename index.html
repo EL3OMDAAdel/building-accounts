@@ -138,6 +138,13 @@ nav.main-nav .nav-pink{background:linear-gradient(145deg,#ffd0e5,#ed6ca8)}
 }
 @media(min-width:900px){nav.main-nav{grid-template-columns:repeat(6,minmax(0,1fr))!important}}
 
+
+/* ملخص وحالات سداد المديونية */
+.dues-summary{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.dues-summary-chip{display:inline-flex;align-items:center;gap:5px;padding:8px 12px;border-radius:12px;font-size:13px;font-weight:700}
+#duesBody tr td{vertical-align:middle}
+#duesBody tr:has(td[colspan="6"]){border-top:3px solid #fff}
+
 </style></head>
 <body>
 <header><h1>🏢 حسابات العمارة</h1><p>لوحة متابعة الاشتراكات والتحصيل والمصروفات</p></header>
@@ -179,7 +186,7 @@ nav.main-nav .nav-pink{background:linear-gradient(145deg,#ffd0e5,#ed6ca8)}
 <div class="card">
   <div class="toolbar"><div class="field"><label>الشهر</label><input type="month" id="month"></div><button class="primary" id="makeDues">إنشاء مستحقات الشهر</button></div>
   <div class="notice">من يناير إلى يونيو 2026: الدور الأول 200 جنيه وباقي الأدوار 250 جنيه. من يوليو 2026 وما بعده: الدور الأول 250 جنيه وباقي الأدوار 300 جنيه. الدفعات تُخصم من أقدم شهر مستحق أولاً.</div>
-  <div class="table-wrap"><table><thead><tr><th>الشقة</th><th>الاشتراك</th><th>مدفوع هذا الشهر</th><th>المتبقي</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="duesBody"></tbody></table></div>
+  <div id="duesStatusSummary" class="dues-summary"></div><div class="table-wrap"><table><thead><tr><th>الشقة</th><th>الاشتراك</th><th>مدفوع هذا الشهر</th><th>المتبقي</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="duesBody"></tbody></table></div>
 </div>
 <div class="card" style="margin-top:14px"><h3>آخر الدفعات</h3><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الشقة</th><th>المبلغ</th><th>ملاحظات</th></tr></thead><tbody id="recentPayments"></tbody></table></div></div>
 </section>
@@ -489,12 +496,29 @@ document.getElementById('sExtraDeduct').textContent=money(deductionsTotal);
 document.getElementById('sBalance').textContent=money((Number(db.carryForward)||0)+totalPaid+(Number(db.extraAdd)||0)-deductionsTotal-exp)+' ج.م';
 renderExtraDeductions();
 
-const rows=db.apartments.map(a=>{
+const classified=db.apartments.map(a=>{
   const due=dueFor(a.id,m),paid=paidFor(a.id,m),rem=Math.max(0,due-paid);
   const status=due===0?'لم تُنشأ':rem===0?'مسدد':paid>0?'جزئي':'لم يسدد';
-  return `<tr style="background:${floorColor(a.floor)}"><td>${aptOwnerCell(a)}</td><td>${money(due||fee(a,m))}</td><td>${money(paid)}</td><td>${money(rem)}</td><td><span class="pill ${rem===0&&due>0?'':paid>0?'partial':'unpaid'}">${status}</span></td><td><button class="small primary" onclick="openPay('${a.id}')">تسجيل دفعة</button></td></tr>`;
+  const group=due===0?'notCreated':rem===0?'paid':paid>0?'partial':'unpaid';
+  return {a,due,paid,rem,status,group};
+});
+const groupDefs=[
+  {key:'unpaid',title:'لم يسددوا',color:'#fee2e2',text:'#991b1b'},
+  {key:'partial',title:'سداد جزئي',color:'#fef3c7',text:'#92400e'},
+  {key:'paid',title:'مسدد بالكامل',color:'#dcfce7',text:'#166534'},
+  {key:'notCreated',title:'لم تُنشأ لهم مديونية',color:'#e0e7ff',text:'#3730a3'}
+];
+const countFor=key=>classified.filter(x=>x.group===key).length;
+const rows=groupDefs.map(g=>{
+  const items=classified.filter(x=>x.group===g.key);
+  if(!items.length)return '';
+  const heading=`<tr><td colspan="6" style="background:${g.color};color:${g.text};font-weight:800;padding:12px">${g.title} — ${items.length} شقة</td></tr>`;
+  const body=items.map(({a,due,paid,rem,status})=>`<tr style="background:${floorColor(a.floor)}"><td>${aptOwnerCell(a)}</td><td>${money(due||fee(a,m))}</td><td>${money(paid)}</td><td>${money(rem)}</td><td><span class="pill ${rem===0&&due>0?'':paid>0?'partial':'unpaid'}">${status}</span></td><td><button class="small primary" onclick="openPay('${a.id}')">تسجيل دفعة</button></td></tr>`).join('');
+  return heading+body;
 }).join('');
-document.getElementById('duesBody').innerHTML=rows;
+document.getElementById('duesBody').innerHTML=rows||'<tr><td colspan="6" class="empty">لا توجد شقق</td></tr>';
+const summary=document.getElementById('duesStatusSummary');
+if(summary)summary.innerHTML=groupDefs.map(g=>`<span class="dues-summary-chip" style="background:${g.color};color:${g.text}">${g.title}: <b>${countFor(g.key)}</b></span>`).join('');
 
 const recent=[...db.payments].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,8);
 document.getElementById('recentPayments').innerHTML=recent.length?recent.map(p=>{
