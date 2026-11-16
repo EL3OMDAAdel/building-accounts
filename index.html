@@ -294,6 +294,14 @@ table tbody tr[style*="background"] td button,
 .standalone-entry-fields input{width:100%;min-width:0;padding:10px;border:1px solid #64748b;border-radius:9px;background:#111827;color:#fff}
 .standalone-entry-saved{margin-top:10px;padding:9px;border-radius:9px;background:#273449;color:#e5e7eb;font-size:13px}
 @media(max-width:560px){.standalone-entry-fields{grid-template-columns:1fr}.standalone-entry-fields button{width:100%}}
+
+/* عرض المبلغ المستقل مثل بطاقة الرصيد الحالي */
+.standalone-entry-card{background:#1f2937!important;color:#f9fafb!important;border:1px solid #475569;gap:7px}
+.standalone-entry-card>small{color:#f9fafb!important;font-size:13px}
+.standalone-entry-card>#standaloneEntryAmount{width:100%;max-width:100%;margin-top:4px;padding:2px 8px;border:0;border-bottom:1px solid #64748b;border-radius:0;background:transparent;color:#f9fafb;text-align:center;font-size:28px;font-weight:750;outline:none}
+.standalone-entry-card>#standaloneEntryNote{width:100%;max-width:100%;padding:5px 8px;border:0;border-bottom:1px solid #475569;border-radius:0;background:transparent;color:#cbd5e1;text-align:center;font-size:12px}
+.standalone-entry-card>#saveStandaloneEntry{margin-top:4px;min-width:110px}
+.standalone-entry-saved{margin-top:2px;color:#cbd5e1;font-size:11px;text-align:center}
 </style></head>
 <body>
 <header><h1>🏢 حسابات العمارة</h1><p>لوحة متابعة الاشتراكات والتحصيل والمصروفات</p></header>
@@ -307,14 +315,11 @@ table tbody tr[style*="background"] td button,
 <div class="card stat"><small>مبالغ إضافية تضاف للرصيد (جنيه)</small><input id="extraAddInput" type="number" step="0.01" value="0" aria-label="مبالغ إضافية تضاف للرصيد" style="font-size:20px;font-weight:750;margin-top:7px;color:var(--ink)"></div>
 <div class="card stat stat-glow-red balance-wide"><small>الرصيد الحالي بعد المصروفات والإضافات والخصومات</small><strong id="sBalance">0 ج.م</strong></div>
 <button type="button" class="deduct-launch deduct-launch-wide" id="openExtraDeductModal"><span class="deduct-launch-icon">➖</span><span>مبالغ تخصم من الرصيد</span></button>
-<div class="card standalone-entry-card" style="grid-column:1/-1;width:100%">
-<strong>مبلغ وملاحظة مستقلة</strong>
-<small>للتسجيل فقط — لا تؤثر على الرصيد أو التحصيل أو المصروفات أو أي حسابات.</small>
-<div class="standalone-entry-fields">
-<label>المبلغ (جنيه)<input id="standaloneEntryAmount" type="number" min="0" step="0.01" placeholder="اكتب المبلغ"></label>
-<label>الملاحظة<input id="standaloneEntryNote" type="text" maxlength="300" placeholder="اكتب الملاحظة"></label>
+<div class="card stat standalone-entry-card balance-wide">
+<small>مبلغ مستقل — لا يؤثر على أي حسابات</small>
+<input id="standaloneEntryAmount" type="number" min="0" step="0.01" placeholder="اكتب المبلغ" aria-label="مبلغ مستقل">
+<input id="standaloneEntryNote" type="text" maxlength="300" placeholder="ملاحظة صغيرة" aria-label="ملاحظة المبلغ">
 <button type="button" class="primary" id="saveStandaloneEntry">حفظ</button>
-</div>
 <div id="standaloneEntrySaved" class="standalone-entry-saved">لا يوجد مبلغ مسجل</div>
 </div>
 </div>
