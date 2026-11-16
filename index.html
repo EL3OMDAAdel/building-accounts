@@ -302,6 +302,24 @@ table tbody tr[style*="background"] td button,
 .standalone-entry-card>#standaloneEntryNote{width:100%;max-width:100%;padding:5px 8px;border:0;border-bottom:1px solid #475569;border-radius:0;background:transparent;color:#cbd5e1;text-align:center;font-size:12px}
 .standalone-entry-card>#saveStandaloneEntry{margin-top:4px;min-width:110px}
 .standalone-entry-saved{margin-top:2px;color:#cbd5e1;font-size:11px;text-align:center}
+
+/* ألوان واضحة لأزرار الشقة والإيصال والتعديل والحذف */
+#aptBody .action-apartment{background:linear-gradient(135deg,#2563eb,#1d4ed8)!important;color:#fff!important;border:1px solid #60a5fa!important}
+#aptPagePayments .action-receipt{background:linear-gradient(135deg,#0f9f8f,#087f70)!important;color:#fff!important;border:1px solid #5eead4!important}
+#managePayments .action-edit,#manageCharges .action-edit{background:linear-gradient(135deg,#f59e0b,#d97706)!important;color:#fff!important;border:1px solid #fcd34d!important}
+#managePayments .action-delete,#manageCharges .action-delete{background:linear-gradient(135deg,#ef4444,#b91c1c)!important;color:#fff!important;border:1px solid #fca5a5!important}
+#aptBody .action-apartment,#aptPagePayments .action-receipt,#managePayments .action-edit,#managePayments .action-delete,#manageCharges .action-edit,#manageCharges .action-delete{font-weight:800!important;border-radius:8px!important;box-shadow:0 2px 7px #0004!important}
+#receiptModal .dialog{background:#f8fafc!important;color:#18332e!important}
+#receiptModal .receipt-paper{background:#fff!important;color:#18332e!important;border:2px dashed #8aa99c!important}
+#receiptModal .receipt-paper h2{color:#176b52!important}
+#receiptModal .receipt-paper p,#receiptModal .receipt-paper b{color:#18332e!important}
+#receiptModal .receipt-paper .receipt-sub{color:#64756f!important}
+#receiptModal .receipt-paper .receipt-date{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:12px 0;padding:10px 12px;border-radius:9px;background:#e8f5ee!important;border:1px solid #a7d8bd!important;color:#14532d!important}
+#receiptModal .receipt-paper .receipt-date b,#receiptModal .receipt-paper .receipt-date strong{color:#14532d!important}
+#receiptModal .receipt-paper table th{background:#176b52!important;color:#fff!important}
+#receiptModal .receipt-paper table td{background:#f5faf7!important;color:#18332e!important}
+#receiptModal .receipt-total{color:#176b52!important}
+
 </style></head>
 <body>
 <header><h1>🏢 حسابات العمارة</h1><p>لوحة متابعة الاشتراكات والتحصيل والمصروفات</p></header>
@@ -706,7 +724,7 @@ document.getElementById('recentPayments').innerHTML=recent.length?recent.map(p=>
 }).join(''):'<tr><td colspan="4" class="empty">لا توجد دفعات مسجلة</td></tr>';
 
 document.getElementById('aptBody').innerHTML=db.apartments.map(a=>
-  `<tr style="background:${floorColor(a.floor)};color:#18332e"><td>${aptOwnerCell(a)}</td><td>${fee(a,m)} جنيه</td><td><input aria-label="اسم صاحب الشقة" value="${esc(a.name)}" onchange="updateApt('${a.id}','name',this.value)" placeholder="اسم صاحب الشقة"></td><td><input aria-label="رقم الهاتف" value="${esc(a.phone)}" onchange="updateApt('${a.id}','phone',this.value)" placeholder="رقم الهاتف"></td><td><button class="small" onclick="showAptPage('${a.id}')">فتح صفحة الشقة</button></td></tr>`
+  `<tr style="background:${floorColor(a.floor)};color:#18332e"><td>${aptOwnerCell(a)}</td><td>${fee(a,m)} جنيه</td><td><input aria-label="اسم صاحب الشقة" value="${esc(a.name)}" onchange="updateApt('${a.id}','name',this.value)" placeholder="اسم صاحب الشقة"></td><td><input aria-label="رقم الهاتف" value="${esc(a.phone)}" onchange="updateApt('${a.id}','phone',this.value)" placeholder="رقم الهاتف"></td><td><button class="small action-apartment" onclick="showAptPage('${a.id}')">فتح صفحة الشقة</button></td></tr>`
 ).join('');
 
 renderExpenses();
@@ -771,9 +789,9 @@ function renderManagement(){
  const selectedPaymentMonth=selectedManagePaymentMonth;
  const pays=db.payments.filter(p=>p.month===selectedPaymentMonth).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
  document.getElementById('managePaymentTotal').textContent=money(pays.reduce((sum,p)=>sum+(Number(p.amount)||0),0))+' جنيه';
- document.getElementById('managePayments').innerHTML=pays.map(p=>`<tr${aptRowStyle(p.apt)}><td>${esc(p.date||'')}</td><td>${aptLabel(p.apt)}</td><td>${esc(p.month||'')}</td><td>${money(p.amount)}</td><td>${esc(p.note||'—')}</td><td><div class="row-actions"><button class="small" onclick="editPayment('${p.id}')">تعديل</button><button class="small danger-text" onclick="deletePayment('${p.id}')">حذف</button></div></td></tr>`).join('')||'<tr><td colspan="6" class="empty">لا توجد دفعات لهذا الشهر</td></tr>';
+ document.getElementById('managePayments').innerHTML=pays.map(p=>`<tr${aptRowStyle(p.apt)}><td>${esc(p.date||'')}</td><td>${aptLabel(p.apt)}</td><td>${esc(p.month||'')}</td><td>${money(p.amount)}</td><td>${esc(p.note||'—')}</td><td><div class="row-actions"><button class="small action-edit" onclick="editPayment('${p.id}')">تعديل</button><button class="small action-delete" onclick="deletePayment('${p.id}')">حذف</button></div></td></tr>`).join('')||'<tr><td colspan="6" class="empty">لا توجد دفعات لهذا الشهر</td></tr>';
  const charges=[...db.charges].sort((a,b)=>b.month.localeCompare(a.month)||String(a.apt).localeCompare(String(b.apt)));
- document.getElementById('manageCharges').innerHTML=charges.map(ch=>`<tr${aptRowStyle(ch.apt)}><td>${esc(ch.month)}</td><td>${aptLabel(ch.apt)}</td><td>${money(ch.amount)}</td><td>${money(paidFor(ch.apt,ch.month))}</td><td><div class="row-actions"><button class="small" onclick="editCharge('${ch.id}')">تعديل</button><button class="small danger-text" onclick="deleteCharge('${ch.id}')">حذف</button></div></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد اشتراكات مسجلة</td></tr>';
+ document.getElementById('manageCharges').innerHTML=charges.map(ch=>`<tr${aptRowStyle(ch.apt)}><td>${esc(ch.month)}</td><td>${aptLabel(ch.apt)}</td><td>${money(ch.amount)}</td><td>${money(paidFor(ch.apt,ch.month))}</td><td><div class="row-actions"><button class="small action-edit" onclick="editCharge('${ch.id}')">تعديل</button><button class="small action-delete" onclick="deleteCharge('${ch.id}')">حذف</button></div></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد اشتراكات مسجلة</td></tr>';
  const expenses=[...db.expenses].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
  document.getElementById('manageExpenses').innerHTML=expenses.map(e=>`<tr><td>${esc(e.date||'')}</td><td>${esc(e.type||'')}</td><td>${esc(e.note||'—')}</td><td>${money(e.amount)}</td><td><button class="small" onclick="editExpense('${e.id}')">تعديل</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد مصروفات</td></tr>';
 }
@@ -877,7 +895,7 @@ function openReceipt(receiptNo){
 const d=receiptData(receiptNo);if(!d)return;
 const a=d.a||{};
 const rows=d.pays.map(p=>'<tr><td>'+esc(p.month)+'</td><td>'+money(p.amount)+' ج.م</td></tr>').join('');
-document.getElementById('receiptContent').innerHTML='<div class="receipt-paper"><h2>🏢 إيصال سداد</h2><p class="receipt-sub">حسابات العمارة</p><p><b>رقم الإيصال:</b> '+esc(receiptNo)+'</p><p><b>الشقة:</b> '+esc(a?aptName(a):'')+'</p><p><b>اسم الساكن:</b> '+esc(a.name||'غير مسجل')+'</p><p><b>تاريخ الدفع:</b> '+esc(d.date)+'</p><table><thead><tr><th>الشهر المحتسب</th><th>المبلغ</th></tr></thead><tbody>'+rows+'</tbody></table><div class="receipt-total">الإجمالي: '+money(d.total)+' جنيه</div><p style="text-align:center;color:#64756f">تم استلام المبلغ الموضح أعلاه، وشكراً لالتزامكم.</p></div>';
+document.getElementById('receiptContent').innerHTML='<div class="receipt-paper"><h2>🏢 إيصال سداد</h2><p class="receipt-sub">حسابات العمارة</p><p><b>رقم الإيصال:</b> '+esc(receiptNo)+'</p><p><b>الشقة:</b> '+esc(a?aptName(a):'')+'</p><p><b>اسم الساكن:</b> '+esc(a.name||'غير مسجل')+'</p><p class="receipt-date"><b>تاريخ الدفع:</b> <strong>'+esc(d.date||"غير محدد") +'</strong></p><table><thead><tr><th>الشهر المحتسب</th><th>المبلغ</th></tr></thead><tbody>'+rows+'</tbody></table><div class="receipt-total">الإجمالي: '+money(d.total)+' جنيه</div><p style="text-align:center;color:#64756f">تم استلام المبلغ الموضح أعلاه، وشكراً لالتزامكم.</p></div>';
 document.getElementById('receiptModal').dataset.receipt=receiptNo;
 document.getElementById('receiptModal').classList.add('open');
 }
@@ -904,7 +922,7 @@ document.getElementById('aptTotalDebt').textContent=money(totalDue-totalPaid)+' 
 const months=[...new Set([...db.charges.filter(c=>c.apt===id).map(c=>c.month),...db.payments.filter(p=>p.apt===id).map(p=>p.month)])].sort();
 document.getElementById('aptPageMonths').innerHTML=months.length?months.map(m=>{const due=dueFor(id,m),paid=paidFor(id,m),remaining=due-paid;const status=due===0?'دفعة مقدمة':remaining<=0?'مسدد':paid>0?'جزئي':'لم يسدد';return '<tr><td>'+esc(m)+'</td><td>'+money(due)+'</td><td>'+money(paid)+'</td><td>'+money(remaining)+'</td><td>'+status+'</td></tr>';}).join(''):'<tr><td colspan="5" class="empty">لا توجد اشتراكات أو دفعات مسجلة لهذه الشقة</td></tr>';
 const pays=db.payments.filter(p=>p.apt===id).slice().sort((x,y)=>(y.date||'').localeCompare(x.date||'')||(y.month||'').localeCompare(x.month||''));
-const seenReceipts=new Set();document.getElementById('aptPagePayments').innerHTML=pays.length?pays.map(p=>{let receipt='—';if(p.receiptNo&&!seenReceipts.has(p.receiptNo)){seenReceipts.add(p.receiptNo);receipt='<button type="button" class="small" onclick="openReceipt(\''+esc(p.receiptNo)+'\')">عرض الإيصال</button>';}return '<tr><td>'+esc(p.date||'غير محدد')+'</td><td>'+esc(p.month||'')+'</td><td>'+money(p.amount)+'</td><td>'+esc(p.note||'—')+'</td><td>'+receipt+'</td></tr>';}).join(''):'<tr><td colspan="5" class="empty">لا توجد دفعات مسجلة</td></tr>';
+const seenReceipts=new Set();document.getElementById('aptPagePayments').innerHTML=pays.length?pays.map(p=>{let receipt='—';if(p.receiptNo&&!seenReceipts.has(p.receiptNo)){seenReceipts.add(p.receiptNo);receipt='<button type="button" class="small action-receipt" onclick="openReceipt(\''+esc(p.receiptNo)+'\')">عرض الإيصال</button>';}return '<tr><td>'+esc(p.date||'غير محدد')+'</td><td>'+esc(p.month||'')+'</td><td>'+money(p.amount)+'</td><td>'+esc(p.note||'—')+'</td><td>'+receipt+'</td></tr>';}).join(''):'<tr><td colspan="5" class="empty">لا توجد دفعات مسجلة</td></tr>';
 }
 function deleteExpense(id){if(confirm('هل تريد حذف هذا المصروف؟')){db.expenses=db.expenses.filter(e=>e.id!==id);save()}}
 
