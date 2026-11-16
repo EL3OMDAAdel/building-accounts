@@ -899,13 +899,49 @@ document.getElementById('receiptContent').innerHTML='<div class="receipt-paper">
 document.getElementById('receiptModal').dataset.receipt=receiptNo;
 document.getElementById('receiptModal').classList.add('open');
 }
-document.getElementById('receiptWhatsApp').onclick=()=>{
+document.getElementById('receiptWhatsApp').onclick=async()=>{
 const no=document.getElementById('receiptModal').dataset.receipt,d=receiptData(no);if(!d)return;
-let phone=String(d.a?.phone||'').replace(/[^0-9]/g,'');
-if(phone.startsWith('01'))phone='2'+phone;
-else if(phone.startsWith('1')&&phone.length===10)phone='20'+phone;
-const url='https://wa.me/'+(phone||'')+'?text='+encodeURIComponent(receiptText(no));
-window.open(url,'_blank');
+const canvas=document.createElement('canvas');
+const width=1080,rowHeight=76,top=300,footer=290,height=top+d.pays.length*rowHeight+footer;
+canvas.width=width;canvas.height=height;
+const ctx=canvas.getContext('2d');
+ctx.fillStyle='#f4faf6';ctx.fillRect(0,0,width,height);
+ctx.fillStyle='#ffffff';ctx.fillRect(42,42,width-84,height-84);
+ctx.strokeStyle='#16845f';ctx.lineWidth=5;ctx.strokeRect(42,42,width-84,height-84);
+ctx.direction='rtl';ctx.textAlign='center';
+ctx.fillStyle='#176b52';ctx.font='bold 54px Arial';ctx.fillText('🏢 إيصال سداد اشتراك العمارة',width/2,135);
+ctx.fillStyle='#64756f';ctx.font='30px Arial';ctx.fillText('حسابات العمارة',width/2,190);
+ctx.strokeStyle='#b7d9c7';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(90,225);ctx.lineTo(width-90,225);ctx.stroke();
+ctx.textAlign='right';ctx.fillStyle='#18332e';ctx.font='bold 32px Arial';
+let y=300;const right=width-105;
+const line=(label,value,color='#18332e')=>{ctx.fillStyle='#64756f';ctx.fillText(label,right,y);ctx.fillStyle=color;ctx.textAlign='left';ctx.fillText(String(value),105,y);ctx.textAlign='right';y+=76;};
+line('رقم الإيصال:',no);
+line('الشقة:',d.a?aptName(d.a):'');
+line('اسم الساكن:',d.a?.name||'غير مسجل');
+line('تاريخ الدفع:',d.date||'غير محدد','#176b52');
+line('رقم الهاتف:',d.a?.phone||'غير مسجل');
+y+=12;ctx.fillStyle='#176b52';ctx.fillRect(90,y,width-180,58);
+ctx.fillStyle='#ffffff';ctx.font='bold 29px Arial';ctx.textAlign='right';ctx.fillText('الشهر المحتسب',width-120,y+39);ctx.textAlign='left';ctx.fillText('المبلغ',120,y+39);y+=82;
+for(const p of d.pays){
+ ctx.fillStyle='#f0f7f3';ctx.fillRect(90,y-40,width-180,66);
+ ctx.fillStyle='#18332e';ctx.font='30px Arial';ctx.textAlign='right';ctx.fillText(String(p.month),width-120,y+4);
+ ctx.textAlign='left';ctx.fillText(money(p.amount)+' جنيه',120,y+4);y+=rowHeight;
+}
+y+=20;ctx.fillStyle='#e2f3e9';ctx.fillRect(90,y-42,width-180,100);
+ctx.fillStyle='#176b52';ctx.font='bold 38px Arial';ctx.textAlign='center';ctx.fillText('إجمالي المدفوع: '+money(d.total)+' جنيه',width/2,y+20);
+y+=115;ctx.fillStyle='#64756f';ctx.font='28px Arial';ctx.fillText('تم استلام المبلغ الموضح أعلاه، وشكراً لالتزامكم.',width/2,y);
+const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+if(!blob){alert('تعذر تجهيز صورة الإيصال. حاول مرة أخرى.');return;}
+const file=new File([blob],'receipt-'+no+'.png',{type:'image/png'});
+if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+ try{await navigator.share({files:[file],title:'إيصال سداد اشتراك العمارة',text:'إيصال السداد'});}
+ catch(err){if(err.name!=='AbortError')alert('تعذر فتح مشاركة الصورة. يمكنك تجربة زر الطباعة أو إعادة المحاولة.');}
+}else{
+ const url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download='إيصال-'+no+'.png';a.click();
+ setTimeout(()=>URL.revokeObjectURL(url),1500);
+ alert('تم تجهيز صورة الإيصال وحفظها. افتح واتساب وأرفق الصورة من المعرض لإرسالها.');
+}
 };
 document.getElementById('receiptPrint').onclick=()=>window.print();
 document.getElementById('receiptClose').onclick=()=>document.getElementById('receiptModal').classList.remove('open');
