@@ -1,3 +1,17 @@
+<div class="card" id="cloudAuthCard" style="margin:14px 0;border:1px solid #c9d9d3">
+<h3>☁️ حساب المزامنة السحابية</h3>
+<p class="muted" id="cloudAuthStatus">لم يتم تسجيل الدخول. بياناتك الحالية تظل محفوظة على هذا الجهاز.</p>
+<div id="cloudLoginFields">
+<div class="field"><label for="cloudEmail">البريد الإلكتروني</label><input id="cloudEmail" type="email" autocomplete="username" placeholder="البريد المسجل في Supabase"></div>
+<div class="field" style="margin-top:8px"><label for="cloudPassword">كلمة المرور</label><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="كلمة مرور حساب Supabase"></div>
+<button class="primary" id="cloudLoginBtn" type="button" style="margin-top:10px">تسجيل الدخول</button>
+</div>
+<button id="cloudLogoutBtn" type="button" style="display:none">تسجيل الخروج</button>
+<button id="cloudTestBtn" type="button" style="display:none;margin-right:6px">اختبار الاتصال بقاعدة البيانات</button>
+<button id="cloudUploadBtn" class="primary" type="button" style="display:none;margin-right:6px">رفع نسخة هذا الجهاز للسحابة</button>
+<button id="cloudRestoreBtn" type="button" style="display:none;margin-right:6px;background:#8b2f2f;color:white">استعادة البيانات السحابية على هذا الجهاز</button><button id="cloudSyncBtn" type="button" style="display:none;margin-right:6px;background:#176b52;color:white">مزامنة آمنة بين الجهازين</button>
+<p class="muted">تسجيل الدخول وحده لا يرفع أو يغيّر أي بيانات. سنختبر الاتصال أولاً قبل تفعيل المزامنة.</p>
+</div>
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
@@ -289,20 +303,6 @@ table tbody tr[style*="background"] td button,
 <body>
 <header><h1>🏢 حسابات العمارة</h1><p>لوحة متابعة الاشتراكات والتحصيل والمصروفات</p></header>
 <div class="wrap">
-<div class="card" id="cloudAuthCard" style="margin:14px 0;border:1px solid #c9d9d3">
-<h3>☁️ حساب المزامنة السحابية</h3>
-<p class="muted" id="cloudAuthStatus">لم يتم تسجيل الدخول. بياناتك الحالية تظل محفوظة على هذا الجهاز.</p>
-<div id="cloudLoginFields">
-<div class="field"><label for="cloudEmail">البريد الإلكتروني</label><input id="cloudEmail" type="email" autocomplete="username" placeholder="البريد المسجل في Supabase"></div>
-<div class="field" style="margin-top:8px"><label for="cloudPassword">كلمة المرور</label><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="كلمة مرور حساب Supabase"></div>
-<button class="primary" id="cloudLoginBtn" type="button" style="margin-top:10px">تسجيل الدخول</button>
-</div>
-<button id="cloudLogoutBtn" type="button" style="display:none">تسجيل الخروج</button>
-<button id="cloudTestBtn" type="button" style="display:none;margin-right:6px">اختبار الاتصال بقاعدة البيانات</button>
-<button id="cloudUploadBtn" class="primary" type="button" style="display:none;margin-right:6px">رفع نسخة هذا الجهاز للسحابة</button>
-<button id="cloudRestoreBtn" type="button" style="display:none;margin-right:6px;background:#8b2f2f;color:white">استعادة البيانات السحابية على هذا الجهاز</button><button id="cloudSyncBtn" type="button" style="display:none;margin-right:6px;background:#176b52;color:white">مزامنة آمنة بين الجهازين</button>
-<p class="muted">تسجيل الدخول وحده لا يرفع أو يغيّر أي بيانات. سنختبر الاتصال أولاً قبل تفعيل المزامنة.</p>
-</div>
 <div class="stats">
 <div class="card stat"><small>إجمالي الاشتراكات الشهرية</small><strong id="sDue">6,150 ج.م</strong></div>
 <div class="card stat"><small>إجمالي المحصل</small><strong id="sPaid">0 ج.م</strong></div>
