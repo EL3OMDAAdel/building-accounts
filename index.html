@@ -271,6 +271,14 @@ table tbody tr[style*="background"] td button,
  color:#18332e!important;
 }
 
+
+/* أيقونة مختصرة لفتح إدارة مبالغ الخصم */
+.deduct-launch{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin:12px 0;padding:12px 16px;border:1px solid #a78bfa;border-radius:14px;background:#302653;color:#fff;font-weight:750;font-size:15px;box-shadow:0 3px 12px #0005}
+.deduct-launch-icon{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;background:#7c3aed;color:#fff;font-size:22px}
+#extraDeductModal .dialog{max-width:760px}
+#extraDeductModal .dialog .card{background:#273449;color:#f9fafb}
+#extraDeductModal .dialog .card small,#extraDeductModal .dialog .card strong{color:#f9fafb}
+
 </style></head>
 <body>
 <header><h1>🏢 حسابات العمارة</h1><p>لوحة متابعة الاشتراكات والتحصيل والمصروفات</p></header>
@@ -296,10 +304,10 @@ table tbody tr[style*="background"] td button,
 <div class="card stat"><small>إجمالي المصروفات</small><strong id="sExpense">0 ج.م</strong></div>
 <div class="card stat"><small>المرحل من السنة الماضية (جنيه)</small><input id="carryForwardInput" type="number" step="0.01" value="0" aria-label="المرحل من السنة الماضية" style="font-size:20px;font-weight:750;margin-top:7px;color:var(--ink)"></div>
 <div class="card stat"><small>مبالغ إضافية تضاف للرصيد (جنيه)</small><input id="extraAddInput" type="number" step="0.01" value="0" aria-label="مبالغ إضافية تضاف للرصيد" style="font-size:20px;font-weight:750;margin-top:7px;color:var(--ink)"></div>
-<div class="card stat deduct-total-soft"><small>إجمالي مبالغ الخصم (جنيه)</small><strong id="sExtraDeduct">0</strong></div>
+<button type="button" class="deduct-launch" id="openExtraDeductModal"><span class="deduct-launch-icon">➖</span><span>مبالغ تخصم من الرصيد</span></button>
 <div class="card stat stat-glow-red"><small>الرصيد الحالي بعد المصروفات والإضافات والخصومات</small><strong id="sBalance">0 ج.م</strong></div>
 </div>
-<div class="card" style="margin-top:14px"><h3>تسجيل مبالغ تخصم من الرصيد</h3><p class="muted">أضف كل خصم كبند مستقل مع ملاحظة توضح سببه. جميع البنود تُجمع تلقائياً في إجمالي الخصومات.</p><div class="toolbar"><div class="field"><label for="extraDeductAmount">المبلغ بالجنيه</label><input id="extraDeductAmount" type="number" min="0.01" step="0.01" placeholder="المبلغ"></div><div class="field"><label for="extraDeductNote">ملاحظات / سبب الخصم</label><input id="extraDeductNote" placeholder="اكتب سبب الخصم"></div><button class="primary" id="addExtraDeduct">إضافة الخصم</button></div><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>الملاحظات</th><th>إجراء</th></tr></thead><tbody id="extraDeductBody"></tbody></table></div></div>
+
 <nav class="main-nav" aria-label="القائمة الرئيسية">
 <button class="tab active" data-tab="dues"><span class="nav-icon nav-cyan">💳</span><span>الاشتراكات والتحصيل</span></button>
 <button class="tab" data-tab="apartments"><span class="nav-icon nav-purple">🏠</span><span>الشقق والسكان</span></button>
@@ -335,6 +343,7 @@ table tbody tr[style*="background"] td button,
 <section id="backup"><div class="card"><h3>حفظ واسترجاع البيانات</h3><p class="muted">بيانات البرنامج محفوظة على نفس الجهاز والمتصفح. احتفظ بنسخة احتياطية دورياً، خصوصاً قبل تغيير الهاتف أو المتصفح.</p><div class="toolbar"><button class="primary" id="exportBtn">تنزيل نسخة احتياطية</button><div class="field"><label>استرجاع نسخة سابقة</label><input type="file" id="importFile" accept="application/json"></div></div><button class="tab danger" id="resetBtn">مسح كل البيانات</button></div></section>
 <div class="footer">نسخة أولية تعمل على جهازك — لا تشارك بياناتها تلقائياً بين أكثر من هاتف.</div>
 </div>
+<div class="modal" id="extraDeductModal"><div class="dialog"><h3>تسجيل مبالغ تخصم من الرصيد</h3><div class="card stat" style="margin-bottom:12px"><small>إجمالي مبالغ الخصم</small><strong id="sExtraDeduct">0</strong></div><p class="muted">أضف كل خصم كبند مستقل مع ملاحظة توضح سببه.</p><div class="toolbar"><div class="field"><label for="extraDeductAmount">المبلغ بالجنيه</label><input id="extraDeductAmount" type="number" min="0.01" step="0.01" placeholder="المبلغ"></div><div class="field"><label for="extraDeductNote">ملاحظات / سبب الخصم</label><input id="extraDeductNote" placeholder="اكتب سبب الخصم"></div><button class="primary" id="addExtraDeduct">إضافة الخصم</button></div><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>الملاحظات</th><th>إجراء</th></tr></thead><tbody id="extraDeductBody"></tbody></table></div><div class="dialog-actions"><button type="button" class="primary" id="closeExtraDeductModal">إغلاق</button></div></div></div>
 <div class="modal" id="duesGroupModal"><div class="dialog"><h3 id="duesGroupTitle">قائمة الشقق</h3><div id="duesGroupList"></div><div class="dialog-actions"><button type="button" class="primary" onclick="document.getElementById('duesGroupModal').classList.remove('open')">إغلاق</button></div></div></div>
 <div class="modal" id="modal"><div class="dialog"><h3 id="modalTitle">تسجيل دفعة</h3><div id="modalContent"></div><div class="dialog-actions"><button class="primary" id="modalSave">حفظ</button><button id="modalCancel">إلغاء</button></div></div></div>
 <div class="modal" id="receiptModal"><div class="dialog"><div id="receiptContent"></div><div class="dialog-actions no-print"><button class="primary" id="receiptWhatsApp">إرسال واتساب</button><button id="receiptPrint">طباعة الإيصال</button><button id="receiptClose">إغلاق</button></div></div></div>
@@ -877,6 +886,8 @@ alert(n?`تم إنشاء مستحقات ${m} لعدد ${n} شقة`:'مستحقا
 document.getElementById('month').onchange=render;
 document.getElementById('expDate').value=localDate();
 document.getElementById('expenseMonth').onchange=renderExpenses;
+document.getElementById("openExtraDeductModal").onclick=()=>document.getElementById("extraDeductModal").classList.add("open");
+document.getElementById("closeExtraDeductModal").onclick=()=>document.getElementById("extraDeductModal").classList.remove("open");
 document.getElementById("addExtraDeduct").onclick=()=>{
  const amount=Number(document.getElementById("extraDeductAmount").value);
  const note=document.getElementById("extraDeductNote").value.trim();
