@@ -358,7 +358,6 @@ table tbody tr[style*="background"] td button,
 <section id="dues" class="active">
 <div class="card">
   <div class="toolbar"><div class="field"><label>الشهر</label><input type="month" id="month"></div><button class="primary" id="makeDues">إنشاء مستحقات الشهر</button></div>
-  <div class="notice">من يناير إلى يونيو 2026: الدور الأول 200 جنيه وباقي الأدوار 250 جنيه. من يوليو 2026 وما بعده: الدور الأول 250 جنيه وباقي الأدوار 300 جنيه. الدفعات تُخصم من أقدم شهر مستحق أولاً.</div>
   <div id="duesStatusSummary" class="dues-summary"></div><div class="table-wrap"><table><thead><tr><th>الشقة</th><th>الاشتراك</th><th>مدفوع هذا الشهر</th><th>المتبقي</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="duesBody"></tbody></table></div>
 </div>
 <div class="card" style="margin-top:14px"><h3>آخر الدفعات</h3><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الشقة</th><th>المبلغ</th><th>ملاحظات</th></tr></thead><tbody id="recentPayments"></tbody></table></div></div>
@@ -369,7 +368,6 @@ table tbody tr[style*="background"] td button,
 <section id="reports">
 <div class="grid2">
   <div class="card"><h3>ملخص الحسابات</h3><p>إجمالي التحصيل: <b id="rPaid">0</b> ج.م</p><p>إجمالي المصروفات: <b id="rExp">0</b> ج.م</p><p>المرحل من السنة الماضية: <b id="rCarryForward">0</b> ج.م</p><p>إضافات أخرى: <b id="rExtraAdd">0</b> ج.م</p><p>خصومات أخرى: <b id="rExtraDeduct">0</b> ج.م</p><p>صافي الرصيد بعد الإضافات والخصومات والمصروفات: <b id="rBalance">0</b> ج.م</p><p>إجمالي المديونيات: <b id="rDebt">0</b> ج.م</p></div>
-  <div class="card"><h3>ملخص الاشتراكات</h3><p>من يناير إلى يونيو 2026: الدور الأول 600 جنيه شهرياً، وباقي الأدوار 4,500 جنيه، والإجمالي 5,100 جنيه.</p><p>من يوليو 2026 وما بعده: الدور الأول 750 جنيه شهرياً، وباقي الأدوار 5,400 جنيه، والإجمالي 6,150 جنيه.</p><button onclick="window.print()">طباعة التقرير</button></div>
 </div>
 <div class="card" style="margin-top:14px"><h3>المديونيات حسب الشقة</h3><div class="table-wrap"><table><thead><tr><th>الشقة</th><th>إجمالي المستحق</th><th>إجمالي المدفوع</th><th>المديونية</th></tr></thead><tbody id="debtBody"></tbody></table></div></div>
 </section>
