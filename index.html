@@ -145,6 +145,32 @@ nav.main-nav .nav-pink{background:linear-gradient(145deg,#ffd0e5,#ed6ca8)}
 #duesBody tr td{vertical-align:middle}
 #duesBody tr:has(td[colspan="6"]){border-top:3px solid #fff}
 
+
+/* الوضع الداكن مع الحفاظ على نفس ترتيب وتصميم البرنامج */
+:root{--bg:#111827;--card:#1f2937;--ink:#f3f4f6;--muted:#c0cad7;--line:#374151;--green:#16845f;--red:#f87171;--gold:#fbbf24}
+body{background:#111827!important;color:#f3f4f6!important}
+.card,.dialog{background:#1f2937!important;color:#f3f4f6!important;border-color:#374151!important}
+.card h2,.card h3,.card h4,.dialog h3,.field label{color:#f3f4f6!important}
+.muted,.stat small,.footer{color:#c0cad7!important}
+.stat strong{color:#f9fafb!important}
+table th{background:#273449!important;color:#e5e7eb!important}
+table td{color:#f3f4f6}
+table td,table th{border-bottom-color:#3b4758!important}
+input:not([type="checkbox"]):not([type="radio"]),select,textarea,
+input[type="number"],input[type="month"],input[type="date"],input[type="text"],input:not([type]){
+ background:#273449!important;background-image:none!important;color:#f9fafb!important;
+ border-color:#64748b!important;caret-color:#fff
+}
+input::placeholder,textarea::placeholder{color:#aab6c7!important}
+select option{background:#273449;color:#f9fafb}
+button:not(.primary),.tab:not(.active){background:#374151;color:#f3f4f6}
+.notice{background:#123d35!important;color:#d1fae5!important}
+.month-choice{background:#273449!important;color:#f3f4f6!important;border-color:#4b5563!important}
+.empty{color:#c0cad7!important}
+.modal{background:#000b!important}
+.deduct-total-soft{background:#263244!important;border-color:#263244!important}
+.deduct-total-soft small,.deduct-total-soft strong{color:#cbd5e1!important}
+
 </style></head>
 <body>
 <header><h1>🏢 حسابات العمارة</h1><p>لوحة متابعة الاشتراكات والتحصيل والمصروفات</p></header>
