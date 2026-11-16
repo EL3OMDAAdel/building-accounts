@@ -1,17 +1,3 @@
-<div class="card" id="cloudAuthCard" style="margin:14px 0;border:1px solid #c9d9d3">
-<h3>☁️ حساب المزامنة السحابية</h3>
-<p class="muted" id="cloudAuthStatus">لم يتم تسجيل الدخول. بياناتك الحالية تظل محفوظة على هذا الجهاز.</p>
-<div id="cloudLoginFields">
-<div class="field"><label for="cloudEmail">البريد الإلكتروني</label><input id="cloudEmail" type="email" autocomplete="username" placeholder="البريد المسجل في Supabase"></div>
-<div class="field" style="margin-top:8px"><label for="cloudPassword">كلمة المرور</label><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="كلمة مرور حساب Supabase"></div>
-<button class="primary" id="cloudLoginBtn" type="button" style="margin-top:10px">تسجيل الدخول</button>
-</div>
-<button id="cloudLogoutBtn" type="button" style="display:none">تسجيل الخروج</button>
-<button id="cloudTestBtn" type="button" style="display:none;margin-right:6px">اختبار الاتصال بقاعدة البيانات</button>
-<button id="cloudUploadBtn" class="primary" type="button" style="display:none;margin-right:6px">رفع نسخة هذا الجهاز للسحابة</button>
-<button id="cloudRestoreBtn" type="button" style="display:none;margin-right:6px;background:#8b2f2f;color:white">استعادة البيانات السحابية على هذا الجهاز</button><button id="cloudSyncBtn" type="button" style="display:none;margin-right:6px;background:#176b52;color:white">مزامنة آمنة بين الجهازين</button>
-<p class="muted">تسجيل الدخول وحده لا يرفع أو يغيّر أي بيانات. سنختبر الاتصال أولاً قبل تفعيل المزامنة.</p>
-</div>
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
@@ -348,6 +334,20 @@ table tbody tr[style*="background"] td button,
 </section>
 <section id="backup"><div class="card"><h3>حفظ واسترجاع البيانات</h3><p class="muted">بيانات البرنامج محفوظة على نفس الجهاز والمتصفح. احتفظ بنسخة احتياطية دورياً، خصوصاً قبل تغيير الهاتف أو المتصفح.</p><div class="toolbar"><button class="primary" id="exportBtn">تنزيل نسخة احتياطية</button><div class="field"><label>استرجاع نسخة سابقة</label><input type="file" id="importFile" accept="application/json"></div></div><button class="tab danger" id="resetBtn">مسح كل البيانات</button></div></section>
 <div class="footer">نسخة أولية تعمل على جهازك — لا تشارك بياناتها تلقائياً بين أكثر من هاتف.</div>
+<div class="card" id="cloudAuthCard" style="margin:14px 0;border:1px solid #c9d9d3">
+<h3>☁️ حساب المزامنة السحابية</h3>
+<p class="muted" id="cloudAuthStatus">لم يتم تسجيل الدخول. بياناتك الحالية تظل محفوظة على هذا الجهاز.</p>
+<div id="cloudLoginFields">
+<div class="field"><label for="cloudEmail">البريد الإلكتروني</label><input id="cloudEmail" type="email" autocomplete="username" placeholder="البريد المسجل في Supabase"></div>
+<div class="field" style="margin-top:8px"><label for="cloudPassword">كلمة المرور</label><input id="cloudPassword" type="password" autocomplete="current-password" placeholder="كلمة مرور حساب Supabase"></div>
+<button class="primary" id="cloudLoginBtn" type="button" style="margin-top:10px">تسجيل الدخول</button>
+</div>
+<button id="cloudLogoutBtn" type="button" style="display:none">تسجيل الخروج</button>
+<button id="cloudTestBtn" type="button" style="display:none;margin-right:6px">اختبار الاتصال بقاعدة البيانات</button>
+<button id="cloudUploadBtn" class="primary" type="button" style="display:none;margin-right:6px">رفع نسخة هذا الجهاز للسحابة</button>
+<button id="cloudRestoreBtn" type="button" style="display:none;margin-right:6px;background:#8b2f2f;color:white">استعادة البيانات السحابية على هذا الجهاز</button><button id="cloudSyncBtn" type="button" style="display:none;margin-right:6px;background:#176b52;color:white">مزامنة آمنة بين الجهازين</button>
+<p class="muted">تسجيل الدخول وحده لا يرفع أو يغيّر أي بيانات. سنختبر الاتصال أولاً قبل تفعيل المزامنة.</p>
+</div>
 </div>
 <div class="modal" id="extraDeductModal"><div class="dialog"><h3>تسجيل مبالغ تخصم من الرصيد</h3><div class="card stat" style="margin-bottom:12px"><small>إجمالي مبالغ الخصم</small><strong id="sExtraDeduct">0</strong></div><p class="muted">أضف كل خصم كبند مستقل مع ملاحظة توضح سببه.</p><div class="toolbar"><div class="field"><label for="extraDeductAmount">المبلغ بالجنيه</label><input id="extraDeductAmount" type="number" min="0.01" step="0.01" placeholder="المبلغ"></div><div class="field"><label for="extraDeductNote">ملاحظات / سبب الخصم</label><input id="extraDeductNote" placeholder="اكتب سبب الخصم"></div><button class="primary" id="addExtraDeduct">إضافة الخصم</button></div><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>الملاحظات</th><th>إجراء</th></tr></thead><tbody id="extraDeductBody"></tbody></table></div><div class="dialog-actions"><button type="button" class="primary" id="closeExtraDeductModal">إغلاق</button></div></div></div>
 <div class="modal" id="duesGroupModal"><div class="dialog"><h3 id="duesGroupTitle">قائمة الشقق</h3><div id="duesGroupList"></div><div class="dialog-actions"><button type="button" class="primary" onclick="document.getElementById('duesGroupModal').classList.remove('open')">إغلاق</button></div></div></div>
