@@ -209,11 +209,25 @@ nav.main-nav .nav-pink{background:linear-gradient(145deg,#ffd0e5,#ed6ca8)}
 <section id="backup"><div class="card"><h3>حفظ واسترجاع البيانات</h3><p class="muted">بيانات البرنامج محفوظة على نفس الجهاز والمتصفح. احتفظ بنسخة احتياطية دورياً، خصوصاً قبل تغيير الهاتف أو المتصفح.</p><div class="toolbar"><button class="primary" id="exportBtn">تنزيل نسخة احتياطية</button><div class="field"><label>استرجاع نسخة سابقة</label><input type="file" id="importFile" accept="application/json"></div></div><button class="tab danger" id="resetBtn">مسح كل البيانات</button></div></section>
 <div class="footer">نسخة أولية تعمل على جهازك — لا تشارك بياناتها تلقائياً بين أكثر من هاتف.</div>
 </div>
+<div class="modal" id="duesGroupModal"><div class="dialog"><h3 id="duesGroupTitle">قائمة الشقق</h3><div id="duesGroupList"></div><div class="dialog-actions"><button type="button" class="primary" onclick="document.getElementById('duesGroupModal').classList.remove('open')">إغلاق</button></div></div></div>
 <div class="modal" id="modal"><div class="dialog"><h3 id="modalTitle">تسجيل دفعة</h3><div id="modalContent"></div><div class="dialog-actions"><button class="primary" id="modalSave">حفظ</button><button id="modalCancel">إلغاء</button></div></div></div>
 <div class="modal" id="receiptModal"><div class="dialog"><div id="receiptContent"></div><div class="dialog-actions no-print"><button class="primary" id="receiptWhatsApp">إرسال واتساب</button><button id="receiptPrint">طباعة الإيصال</button><button id="receiptClose">إغلاق</button></div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 'use strict';
+function showDuesGroup(key){
+ const month=document.getElementById('month').value;
+ const groups={unpaid:'لم يسددوا',partial:'سداد جزئي',paid:'مسدد بالكامل'};
+ if(!groups[key])return;
+ const items=db.apartments.map(a=>{
+  const due=dueFor(a.id,month),paid=paidFor(a.id,month),remaining=Math.max(0,due-paid);
+  const status=remaining===0?'paid':paid>0?'partial':'unpaid';
+  return {a,due,paid,remaining,status};
+ }).filter(x=>x.due>0&&x.status===key);
+ document.getElementById('duesGroupTitle').textContent=groups[key]+' — '+items.length+' شقة';
+ document.getElementById('duesGroupList').innerHTML=items.length?'<div class="table-wrap"><table style="min-width:0"><thead><tr><th>الشقة / السكان</th><th>الاشتراك</th><th>المدفوع</th><th>المتبقي</th></tr></thead><tbody>'+items.map(({a,due,paid,remaining})=>'<tr><td>'+aptOwnerCell(a)+'</td><td>'+money(due)+'</td><td>'+money(paid)+'</td><td>'+money(remaining)+'</td></tr>').join('')+'</tbody></table></div>':'<p class="empty">لا توجد شقق في هذه الحالة.</p>';
+ document.getElementById('duesGroupModal').classList.add('open');
+}
 const SUPABASE_URL='https://rlmxxbcmocsveexzlfcy.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_puWGGFcRcWFQOnap4Lj8mw_fI5lW4Ey';
 const EXPECTED_CLOUD_USER='ee32fbfc-4af8-4f72-829a-9674edbfa461';
@@ -498,15 +512,14 @@ renderExtraDeductions();
 
 const classified=db.apartments.map(a=>{
   const due=dueFor(a.id,m),paid=paidFor(a.id,m),rem=Math.max(0,due-paid);
-  const status=due===0?'لم تُنشأ':rem===0?'مسدد':paid>0?'جزئي':'لم يسدد';
-  const group=due===0?'notCreated':rem===0?'paid':paid>0?'partial':'unpaid';
+  const status=rem===0?'مسدد':paid>0?'جزئي':'لم يسدد';
+  const group=rem===0?'paid':paid>0?'partial':'unpaid';
   return {a,due,paid,rem,status,group};
-});
+}).filter(x=>x.due>0);
 const groupDefs=[
   {key:'unpaid',title:'لم يسددوا',color:'#fee2e2',text:'#991b1b'},
   {key:'partial',title:'سداد جزئي',color:'#fef3c7',text:'#92400e'},
-  {key:'paid',title:'مسدد بالكامل',color:'#dcfce7',text:'#166534'},
-  {key:'notCreated',title:'لم تُنشأ لهم مديونية',color:'#e0e7ff',text:'#3730a3'}
+  {key:'paid',title:'مسدد بالكامل',color:'#dcfce7',text:'#166534'}
 ];
 const countFor=key=>classified.filter(x=>x.group===key).length;
 const rows=groupDefs.map(g=>{
@@ -518,7 +531,7 @@ const rows=groupDefs.map(g=>{
 }).join('');
 document.getElementById('duesBody').innerHTML=rows||'<tr><td colspan="6" class="empty">لا توجد شقق</td></tr>';
 const summary=document.getElementById('duesStatusSummary');
-if(summary)summary.innerHTML=groupDefs.map(g=>`<span class="dues-summary-chip" style="background:${g.color};color:${g.text}">${g.title}: <b>${countFor(g.key)}</b></span>`).join('');
+if(summary)summary.innerHTML=groupDefs.map(g=>`<button type="button" class="dues-summary-chip" onclick="showDuesGroup('${g.key}')" style="border:0;cursor:pointer;background:${g.color};color:${g.text}">${g.title}: <b>${countFor(g.key)}</b> <span aria-hidden="true">⌄</span></button>`).join('');
 
 const recent=[...db.payments].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,8);
 document.getElementById('recentPayments').innerHTML=recent.length?recent.map(p=>{
