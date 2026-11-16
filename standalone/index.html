@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>حسابات العمارة</title>
+<meta name="theme-color" content="#173b35">
+<meta name="description" content="إدارة اشتراكات السكان والتحصيل والمصروفات والمديونيات">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="../icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<style>
+:root{--bg:#f3f6f5;--card:#fff;--ink:#18332e;--muted:#64756f;--green:#176b52;--line:#e2e9e6;--red:#b63d3d;--gold:#9a6a12}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#1c2d29;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}
+header{background:linear-gradient(135deg,#123d35,#1d7057);color:white;padding:26px max(18px,calc((100% - 1100px)/2));box-shadow:0 5px 20px #123d351c}
+header h1{margin:0 0 7px;font-size:27px;letter-spacing:.2px}header p{margin:0;color:#d0e2dc;font-size:14px}
+.wrap{max-width:1100px;margin:20px auto;padding:0 14px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:17px;box-shadow:0 4px 15px #183b350b}
+.stat small{color:var(--muted);font-size:13px}.stat strong{display:block;font-size:25px;margin-top:7px;color:var(--ink);font-weight:750}
+nav{display:flex;gap:9px;overflow:auto;margin:20px 0;padding:5px 2px 9px;scrollbar-width:thin}
+button,.tab{border:0;border-radius:11px;padding:11px 16px;font:inherit;cursor:pointer;background:#e8efec;color:var(--ink);white-space:nowrap;transition:background .15s,transform .15s}button:active,.tab:active{transform:scale(.98)}
+.tab.active,button.primary{background:var(--green);color:white}.tab.danger{background:#f8e8e8;color:var(--red)}
+section{display:none}section.active{display:block}.toolbar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:14px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:150px;flex:1}.field label{font-size:13px;color:var(--muted)}
+input,select,textarea{width:100%;padding:10px;border:1px solid #ccd9d4;border-radius:9px;background:white;font:inherit;color:inherit}
+table{width:100%;border-collapse:collapse;min-width:580px}th,td{padding:11px 9px;text-align:right;border-bottom:1px solid var(--line);font-size:14px}
+th{color:var(--muted);font-weight:600;background:#f8faf9}.table-wrap{overflow:auto;border-radius:12px}
+.pill{display:inline-block;border-radius:30px;padding:4px 9px;font-size:12px;background:#e8f3ee;color:#176b52}
+.pill.unpaid{background:#faeeee;color:#a73535}.pill.partial{background:#fff4dc;color:#8a6417}
+.muted{color:var(--muted)}.row-actions{display:flex;gap:6px}.small{padding:6px 9px;font-size:12px}
+.month-choices{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}.month-choice{border:1px solid var(--line);border-radius:12px;padding:10px 13px;background:#f8faf9;color:var(--ink);min-width:105px}.month-choice.active{background:var(--green);color:#fff;border-color:var(--green)}.month-choice small{display:block;font-size:11px;opacity:.8;margin-top:3px}.notice{padding:12px;border-radius:10px;background:#edf5f1;color:#285a49;margin:10px 0;font-size:13px}
+.empty{text-align:center;padding:24px;color:var(--muted)}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.hidden{display:none!important}.danger-text{color:var(--red)}.footer{color:var(--muted);font-size:12px;text-align:center;margin:22px 0}
+.modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:15px;z-index:4}
+.modal.open{display:flex}.dialog{background:white;border-radius:16px;padding:20px;width:min(440px,100%);max-height:90vh;overflow:auto}
+.dialog h3{margin-top:0}.dialog-actions{display:flex;gap:8px;margin-top:14px}.dialog-actions button{flex:1}
+.receipt-paper{border:1px dashed #9aaba4;border-radius:12px;padding:18px;background:#fff;color:#18332e}.receipt-paper h2{text-align:center;margin:0 0 5px}.receipt-paper .receipt-sub{text-align:center;color:#64756f;margin:0 0 16px}.receipt-paper table{min-width:0;width:100%}.receipt-paper td,.receipt-paper th{font-size:13px;padding:8px 4px}.receipt-total{font-size:20px;font-weight:800;text-align:center;margin:15px 0 4px;color:#176b52}
+@media print{body *{visibility:hidden!important}#receiptModal,#receiptModal *{visibility:visible!important}#receiptModal{display:block!important;position:absolute;inset:0;background:#fff;padding:0}#receiptModal .dialog{width:100%;max-width:none;max-height:none;box-shadow:none;border:0;padding:0}#receiptModal .no-print{display:none!important}.receipt-paper{border:0}}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}header h1{font-size:22px}.wrap{margin-top:12px}.card{padding:13px}}
+
+
+
+/* إضاءة قوية وواضحة ومستمرة الحركة لكل الخانات */
+.card:not(.deduct-total-soft){position:relative!important;animation:visibleCardGlow 1.8s ease-in-out infinite!important;border:1px solid #22c55e!important;box-shadow:0 0 5px 2px #22c55e99,0 0 13px 4px #22c55e66,0 0 24px 5px #16a34a44!important;}
+input:not([type="checkbox"]):not([type="radio"]),select,textarea{border:2px solid #22a85a!important;background:linear-gradient(110deg,#ffffff 0%,#e5ffed 35%,#ffffff 65%,#e5ffed 100%)!important;background-size:260% 100%!important;animation:visibleFieldGlow 1.35s linear infinite!important;box-shadow:0 0 5px 2px #22c55e99,0 0 13px 4px #22c55e66!important;}
+input:not([type="checkbox"]):not([type="radio"]):focus,select:focus,textarea:focus{border-color:#087b36!important;box-shadow:0 0 0 3px #22c55e55,0 0 20px 7px #22c55eaa!important;}
+@keyframes visibleCardGlow{0%,100%{box-shadow:0 0 4px 1px #22c55e77,0 0 10px 3px #22c55e55,0 0 17px 4px #16a34a33}50%{box-shadow:0 0 9px 3px #22c55eff,0 0 22px 8px #22c55ecc,0 0 34px 10px #16a34a77}}
+@keyframes visibleFieldGlow{0%{background-position:100% 0;box-shadow:0 0 4px 1px #22c55e77,0 0 9px 3px #22c55e44}50%{background-position:0 0;box-shadow:0 0 9px 3px #22c55eff,0 0 18px 6px #22c55e99}100%{background-position:-100% 0;box-shadow:0 0 4px 1px #22c55e77,0 0 9px 3px #22c55e44}}
+/* إجمالي مبالغ الخصم شبه أبيض، بالكاد يُلاحظ */
+.deduct-total-soft{background:#fefefe!important;border:1px solid #fdfdfd!important;box-shadow:none!important;animation:none!important;opacity:.42!important;}
+.deduct-total-soft small,.deduct-total-soft strong{color:#eeeeee!important;text-shadow:none!important;}
+.deduct-total-soft:hover{box-shadow:none!important;}
+
+
+/* توهج أسود متحرك على البطاقات وخانات الإدخال */
+.card:not(.deduct-total-soft){border-color:#333!important;box-shadow:0 0 5px 2px #0009,0 0 14px 5px #0007,0 0 25px 7px #0004!important;animation:blackCardPulse 1.8s ease-in-out infinite!important;}
+input:not([type="checkbox"]):not([type="radio"]),select,textarea{border:2px solid #333!important;background:linear-gradient(110deg,#fff 0%,#e5e5e5 35%,#fff 65%,#e5e5e5 100%)!important;background-size:260% 100%!important;box-shadow:0 0 5px 2px #0009,0 0 13px 4px #0007!important;animation:blackFieldGlow 1.35s linear infinite!important;}
+input:not([type="checkbox"]):not([type="radio"]):focus,select:focus,textarea:focus{border-color:#000!important;box-shadow:0 0 0 3px #0005,0 0 20px 7px #000b!important;}
+@keyframes blackCardPulse{0%,100%{box-shadow:0 0 4px 1px #0008,0 0 10px 3px #0006,0 0 17px 4px #0004}50%{box-shadow:0 0 9px 3px #000,0 0 22px 8px #000c,0 0 34px 10px #0008}}
+@keyframes blackFieldGlow{0%{background-position:100% 0;box-shadow:0 0 4px 1px #0008,0 0 9px 3px #0005}50%{background-position:0 0;box-shadow:0 0 9px 3px #000,0 0 18px 6px #0009}100%{background-position:-100% 0;box-shadow:0 0 4px 1px #0008,0 0 9px 3px #0005}}
+/* متبقي التحصيل والرصيد الحالي باللون الأحمر */
+#sDebt,#sBalance{color:#dc2626!important;text-shadow:0 0 7px #dc262666!important;}
+.stat-glow-red{border-color:#dc2626!important;box-shadow:0 0 7px 2px #000a,0 0 18px 5px #0008!important;animation:blackCardPulse 1.8s ease-in-out infinite!important;}
+.stat-glow-red strong{color:#dc2626!important;text-shadow:0 0 7px #dc262666!important;}
+/* إجمالي الخصم يبقى شبه غير مرئي */
+.deduct-total-soft{background:#fefefe!important;border-color:#fdfdfd!important;box-shadow:none!important;animation:none!important;opacity:.42!important;}
+.deduct-total-soft small,.deduct-total-soft strong{color:#eeeeee!important;text-shadow:none!important;}
+.deduct-total-soft:hover{box-shadow:none!important;}
+
+
+/* ألوان مميزة للأرصدة والخانات مع الحفاظ على التوهج الأسود */
+#sBalance{color:#16a34a!important;text-shadow:0 0 8px #22c55e88!important}
+#sDebt{color:#dc2626!important;text-shadow:0 0 8px #ef444488!important}
+.stats>.card:nth-child(1){border-color:#0ea5e9!important}
+.stats>.card:nth-child(2){border-color:#8b5cf6!important}
+.stats>.card:nth-child(3){border-color:#dc2626!important}
+.stats>.card:nth-child(4){border-color:#f59e0b!important}
+.stats>.card:nth-child(5){border-color:#0d9488!important}
+.stats>.card:nth-child(6){border-color:#6366f1!important}
+.stats>.card:nth-child(8){border-color:#16a34a!important}
+input[type="number"]{background:linear-gradient(110deg,#fff 0%,#fff1e6 40%,#fff 75%)!important}
+input[type="month"],input[type="date"]{background:linear-gradient(110deg,#fff 0%,#eaf3ff 40%,#fff 75%)!important}
+input[type="text"],input:not([type]){background:linear-gradient(110deg,#fff 0%,#f3e8ff 40%,#fff 75%)!important}
+select{background:linear-gradient(110deg,#fff 0%,#e6fffa 40%,#fff 75%)!important}
+textarea{background:linear-gradient(110deg,#fff 0%,#fff7db 40%,#fff 75%)!important}
+.stats>.card:not(.deduct-total-soft){box-shadow:0 0 5px 2px #0009,0 0 14px 5px #0007!important}
+
+
+/* قائمة رئيسية بأيقونات ملونة ومتجاوبة */
+nav.main-nav{
+ display:grid!important;
+ grid-template-columns:repeat(auto-fit,minmax(138px,1fr))!important;
+ gap:12px!important;
+ overflow:visible!important;
+ margin:20px 0!important;
+ padding:4px 2px 10px!important;
+ scrollbar-width:none;
+}
+nav.main-nav .tab{
+ min-height:94px!important;
+ padding:12px 8px!important;
+ border:1px solid #dce5e1!important;
+ border-radius:17px!important;
+ background:#fff!important;
+ color:#20332e!important;
+ white-space:normal!important;
+ display:flex!important;
+ flex-direction:column!important;
+ align-items:center!important;
+ justify-content:center!important;
+ gap:8px!important;
+ font-size:14px!important;
+ font-weight:800!important;
+ line-height:1.35!important;
+ box-shadow:0 5px 15px #193b3514!important;
+ transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease!important;
+}
+nav.main-nav .tab:hover{transform:translateY(-3px)!important;box-shadow:0 9px 20px #193b3524!important}
+nav.main-nav .tab.active{
+ background:linear-gradient(145deg,#ffffff,#f0f8f5)!important;
+ color:#123d35!important;
+ border:2px solid #16865f!important;
+ box-shadow:0 0 0 3px #16a36a20,0 8px 20px #176b5228!important;
+}
+nav.main-nav .nav-icon{
+ width:46px;height:46px;display:flex;align-items:center;justify-content:center;
+ border-radius:15px;font-size:25px;line-height:1;
+ box-shadow:inset 0 1px 1px #ffffffb8,0 4px 9px #00000012;
+}
+nav.main-nav .nav-cyan{background:linear-gradient(145deg,#b9f3ff,#27b6df)}
+nav.main-nav .nav-purple{background:linear-gradient(145deg,#e4d2ff,#9b67ed)}
+nav.main-nav .nav-orange{background:linear-gradient(145deg,#ffe0b2,#ff9636)}
+nav.main-nav .nav-blue{background:linear-gradient(145deg,#c9dcff,#5288f4)}
+nav.main-nav .nav-green{background:linear-gradient(145deg,#c8f7d7,#38bd75)}
+nav.main-nav .nav-pink{background:linear-gradient(145deg,#ffd0e5,#ed6ca8)}
+@media(max-width:420px){
+ nav.main-nav{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+ nav.main-nav .tab{min-height:88px!important;font-size:13px!important}
+}
+@media(min-width:900px){nav.main-nav{grid-template-columns:repeat(6,minmax(0,1fr))!important}}
+
+
+/* ملخص وحالات سداد المديونية */
+.dues-summary{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.dues-summary-chip{display:inline-flex;align-items:center;gap:5px;padding:8px 12px;border-radius:12px;font-size:13px;font-weight:700}
+#duesBody tr td{vertical-align:middle}
+#duesBody tr:has(td[colspan="6"]){border-top:3px solid #fff}
+
+
+/* الوضع الداكن مع الحفاظ على نفس ترتيب وتصميم البرنامج */
+:root{--bg:#111827;--card:#1f2937;--ink:#f3f4f6;--muted:#c0cad7;--line:#374151;--green:#16845f;--red:#f87171;--gold:#fbbf24}
+body{background:#111827!important;color:#f3f4f6!important}
+.card,.dialog{background:#1f2937!important;color:#f3f4f6!important;border-color:#374151!important}
+.card h2,.card h3,.card h4,.dialog h3,.field label{color:#f3f4f6!important}
+.muted,.stat small,.footer{color:#c0cad7!important}
+.stat strong{color:#f9fafb!important}
+table th{background:#273449!important;color:#e5e7eb!important}
+table td{color:#f3f4f6}
+table td,table th{border-bottom-color:#3b4758!important}
+input:not([type="checkbox"]):not([type="radio"]),select,textarea,
+input[type="number"],input[type="month"],input[type="date"],input[type="text"],input:not([type]){
+ background:#273449!important;background-image:none!important;color:#f9fafb!important;
+ border-color:#64748b!important;caret-color:#fff
+}
+input::placeholder,textarea::placeholder{color:#aab6c7!important}
+select option{background:#273449;color:#f9fafb}
+button:not(.primary),.tab:not(.active){background:#374151;color:#f3f4f6}
+.notice{background:#123d35!important;color:#d1fae5!important}
+.month-choice{background:#273449!important;color:#f3f4f6!important;border-color:#4b5563!important}
+.empty{color:#c0cad7!important}
+.modal{background:#000b!important}
+.deduct-total-soft{background:#263244!important;border-color:#263244!important}
+.deduct-total-soft small,.deduct-total-soft strong{color:#cbd5e1!important}
+
+
+/* تثبيت الوضع الداكن وإزالة أي خلفيات بيضاء متبقية */
+html,body{background:#111827!important;color:#f3f4f6!important}
+body,.wrap,section{background-color:#111827!important;color:#f3f4f6!important}
+.card,.dialog,.toolbar,.table-wrap{background-color:#1f2937!important;color:#f3f4f6!important}
+nav.main-nav .tab{background:#1f2937!important;color:#f3f4f6!important;border-color:#475569!important}
+nav.main-nav .tab.active{background:#263b4a!important;color:#fff!important;border-color:#22a06b!important}
+.month-choice,.notice{color:#f3f4f6!important}
+.deduct-total-soft{background:#3b3020!important;border:2px solid #d97706!important;opacity:1!important;box-shadow:0 0 10px #d9770666!important}
+.deduct-total-soft small,.deduct-total-soft strong{color:#ffdf9e!important;text-shadow:none!important}
+
+/* إصلاح نهائي للأسطح البيضاء في الواجهة */
+html,body{background:#111827!important;color:#f3f4f6!important}
+body>.wrap,.wrap,section,.card,.dialog,.toolbar,.table-wrap,
+#cloudAuthCard,.modal .dialog,nav.main-nav .tab,nav.main-nav .tab.active,
+.month-choice,.dues-summary-chip{
+ background-color:#1f2937!important;
+ color:#f3f4f6!important;
+}
+.card h2,.card h3,.card h4,.dialog h2,.dialog h3,
+.field label,.toolbar label,nav.main-nav .tab{color:#f3f4f6!important}
+table th{background-color:#273449!important;color:#f3f4f6!important}
+input:not([type="checkbox"]):not([type="radio"]),select,textarea{
+ background:#273449!important;background-image:none!important;color:#f9fafb!important;
+ border-color:#64748b!important
+}
+button:not(.primary),.tab:not(.active){background-color:#374151!important;color:#f3f4f6!important}
+nav.main-nav .tab.active{background-color:#263b4a!important;color:#fff!important}
+/* إجمالي الخصومات: تمويه شبه شفاف وغير بارز */
+.deduct-total-soft{
+ background:transparent!important;background-color:transparent!important;
+ border:1px solid transparent!important;box-shadow:none!important;
+ animation:none!important;opacity:.10!important;filter:none!important
+}
+.deduct-total-soft small,.deduct-total-soft strong{
+ color:#d1d5db!important;text-shadow:none!important
+}
+.deduct-total-soft:hover,.deduct-total-soft:focus-within{
+ box-shadow:none!important;opacity:.14!important
+}
+
+
+/* القائمة الرئيسية: فرض الوضع الداكن على كل أزرارها */
+nav.main-nav{background:transparent!important}
+nav.main-nav button.tab,
+nav.main-nav button.tab:not(.active),
+nav.main-nav button.tab.active{
+ background:#1f2937!important;
+ background-image:none!important;
+ color:#f9fafb!important;
+ border:1px solid #475569!important;
+}
+nav.main-nav button.tab span:not(.nav-icon){color:#f9fafb!important}
+nav.main-nav button.tab.active{
+ background:#263b4a!important;
+ color:#ffffff!important;
+ border:2px solid #22a06b!important;
+}
+nav.main-nav button.tab .nav-icon{color:inherit!important}
+/* بطاقة الخصومات مموهة بلون مطابق للخلفية */
+.card.stat.deduct-total-soft{
+ background:#111827!important;
+ background-color:#111827!important;
+ background-image:none!important;
+ border:1px solid #111827!important;
+ box-shadow:none!important;
+ opacity:.025!important;
+ animation:none!important;
+}
+.card.stat.deduct-total-soft small,
+.card.stat.deduct-total-soft strong{
+ color:#111827!important;
+ text-shadow:none!important;
+}
+.card.stat.deduct-total-soft:hover{opacity:.025!important;box-shadow:none!important}
+
+
+/* وضوح النص داخل صفوف الشقق الملونة حسب الدور */
+table tbody tr[style*="background"] td,
+table tbody tr[style*="background"] td *,
+#duesBody tr td,
+#recentPayments tr td,
+#aptBody tr td,
+#debtBody tr td,
+#managePayments tr td,
+#manageCharges tr td,
+#manageExpenses tr td{
+ color:#18332e!important;
+}
+table tbody tr[style*="background"] td button,
+#duesBody tr td button,
+#recentPayments tr td button,
+#aptBody tr td button,
+#debtBody tr td button,
+#managePayments tr td button,
+#manageCharges tr td button,
+#manageExpenses tr td button{
+ color:#18332e!important;
+}
+
+
+/* أيقونة مختصرة لفتح إدارة مبالغ الخصم */
+.deduct-launch{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin:12px 0;padding:12px 16px;border:1px solid #a78bfa;border-radius:14px;background:#302653;color:#fff;font-weight:750;font-size:15px;box-shadow:0 3px 12px #0005}
+.deduct-launch-icon{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;background:#7c3aed;color:#fff;font-size:22px}
+#extraDeductModal .dialog{max-width:760px}
+#extraDeductModal .dialog .card{background:#273449;color:#f9fafb}
+#extraDeductModal .dialog .card small,#extraDeductModal .dialog .card strong{color:#f9fafb}
+
+
+.apt-debt-whatsapp{background:#128c7e!important;color:#fff!important;font-weight:800;border:1px solid #25d366!important;box-shadow:0 3px 12px #0005}
+.apt-debt-whatsapp:active{background:#075e54!important}
+
+/* الرصيد الحالي وأيقونة الخصومات بعرض الواجهة بالكامل */
+.stats>.balance-wide{grid-column:1/-1;width:100%;box-sizing:border-box;min-height:92px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.stats>.balance-wide strong{font-size:28px}
+.stats>.deduct-launch-wide{grid-column:1/-1;width:100%;box-sizing:border-box;margin:0}
+
+
+.standalone-entry-card{background:#1f2937!important;color:#f9fafb!important;border:1px solid #475569}
+.standalone-entry-card>strong,.standalone-entry-card>small{display:block;color:#f9fafb!important}
+.standalone-entry-card>small{margin-top:5px;opacity:.8}
+.standalone-entry-fields{display:grid;grid-template-columns:1fr 2fr auto;gap:10px;align-items:end;margin-top:12px}
+.standalone-entry-fields label{display:flex;flex-direction:column;gap:5px;color:#f9fafb;font-size:13px}
+.standalone-entry-fields input{width:100%;min-width:0;padding:10px;border:1px solid #64748b;border-radius:9px;background:#111827;color:#fff}
+.standalone-entry-saved{margin-top:10px;padding:9px;border-radius:9px;background:#273449;color:#e5e7eb;font-size:13px}
+@media(max-width:560px){.standalone-entry-fields{grid-template-columns:1fr}.standalone-entry-fields button{width:100%}}
+
+/* عرض المبلغ المستقل مثل بطاقة الرصيد الحالي */
+.standalone-entry-card{background:#1f2937!important;color:#f9fafb!important;border:1px solid #475569;gap:7px}
+.standalone-entry-card>small{color:#f9fafb!important;font-size:13px}
+.standalone-entry-card>#standaloneEntryAmount{width:100%;max-width:100%;margin-top:4px;padding:2px 8px;border:0;border-bottom:1px solid #64748b;border-radius:0;background:transparent;color:#f9fafb;text-align:center;font-size:28px;font-weight:750;outline:none}
+.standalone-entry-card>#standaloneEntryNote{width:100%;max-width:100%;padding:5px 8px;border:0;border-bottom:1px solid #475569;border-radius:0;background:transparent;color:#cbd5e1;text-align:center;font-size:12px}
+.standalone-entry-card>#saveStandaloneEntry{margin-top:4px;min-width:110px}
+.standalone-entry-saved{margin-top:2px;color:#cbd5e1;font-size:11px;text-align:center}
+
+/* ألوان واضحة لأزرار الشقة والإيصال والتعديل والحذف */
+#aptBody .action-apartment{background:linear-gradient(135deg,#2563eb,#1d4ed8)!important;color:#fff!important;border:1px solid #60a5fa!important}
+#aptPagePayments .action-receipt{background:linear-gradient(135deg,#0f9f8f,#087f70)!important;color:#fff!important;border:1px solid #5eead4!important}
+#managePayments .action-edit,#manageCharges .action-edit{background:linear-gradient(135deg,#f59e0b,#d97706)!important;color:#fff!important;border:1px solid #fcd34d!important}
+#managePayments .action-delete,#manageCharges .action-delete{background:linear-gradient(135deg,#ef4444,#b91c1c)!important;color:#fff!important;border:1px solid #fca5a5!important}
+#aptBody .action-apartment,#aptPagePayments .action-receipt,#managePayments .action-edit,#managePayments .action-delete,#manageCharges .action-edit,#manageCharges .action-delete{font-weight:800!important;border-radius:8px!important;box-shadow:0 2px 7px #0004!important}
+#receiptModal .dialog{background:#f8fafc!important;color:#18332e!important}
+#receiptModal .receipt-paper{background:#fff!important;color:#18332e!important;border:2px dashed #8aa99c!important}
+#receiptModal .receipt-paper h2{color:#176b52!important}
+#receiptModal .receipt-paper p,#receiptModal .receipt-paper b{color:#18332e!important}
+#receiptModal .receipt-paper .receipt-sub{color:#64756f!important}
+#receiptModal .receipt-paper .receipt-date{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:12px 0;padding:10px 12px;border-radius:9px;background:#e8f5ee!important;border:1px solid #a7d8bd!important;color:#14532d!important}
+#receiptModal .receipt-paper .receipt-date b,#receiptModal .receipt-paper .receipt-date strong{color:#14532d!important}
+#receiptModal .receipt-paper table th{background:#176b52!important;color:#fff!important}
+#receiptModal .receipt-paper table td{background:#f5faf7!important;color:#18332e!important}
+#receiptModal .receipt-total{color:#176b52!important}
+
+</style></head>
+<body>
+<header><h1>🏢 حسابات العمارة</h1><p>لوحة متابعة الاشتراكات والتحصيل والمصروفات</p></header>
+<div class="wrap">
+<div class="stats">
+<div class="card stat"><small>إجمالي الاشتراكات الشهرية</small><strong id="sDue">6,150 ج.م</strong></div>
+<div class="card stat"><small>إجمالي المحصل</small><strong id="sPaid">0 ج.م</strong></div>
+<div class="card stat stat-glow-red"><small>متبقي التحصيل</small><strong id="sDebt">0 ج.م</strong></div>
+<div class="card stat"><small>إجمالي المصروفات</small><strong id="sExpense">0 ج.م</strong></div>
+<div class="card stat"><small>المرحل من السنة الماضية (جنيه)</small><input id="carryForwardInput" type="number" step="0.01" value="0" aria-label="المرحل من السنة الماضية" style="font-size:20px;font-weight:750;margin-top:7px;color:var(--ink)"></div>
+<div class="card stat"><small>مبالغ إضافية تضاف للرصيد (جنيه)</small><input id="extraAddInput" type="number" step="0.01" value="0" aria-label="مبالغ إضافية تضاف للرصيد" style="font-size:20px;font-weight:750;margin-top:7px;color:var(--ink)"></div>
+<div class="card stat stat-glow-red balance-wide"><small>الرصيد الحالي بعد المصروفات والإضافات والخصومات</small><strong id="sBalance">0 ج.م</strong></div>
+<button type="button" class="deduct-launch deduct-launch-wide" id="openExtraDeductModal"><span class="deduct-launch-icon">➖</span><span>مبالغ تخصم من الرصيد</span></button>
+<div class="card stat standalone-entry-card balance-wide">
+<small>مبلغ مستقل — لا يؤثر على أي حسابات</small>
+<input id="standaloneEntryAmount" type="number" min="0" step="0.01" placeholder="اكتب المبلغ" aria-label="مبلغ مستقل">
+<input id="standaloneEntryNote" type="text" maxlength="300" placeholder="ملاحظة صغيرة" aria-label="ملاحظة المبلغ">
+<button type="button" class="primary" id="saveStandaloneEntry">حفظ</button>
+<div id="standaloneEntrySaved" class="standalone-entry-saved">لا يوجد مبلغ مسجل</div>
+</div>
+</div>
+
+<nav class="main-nav" aria-label="القائمة الرئيسية">
+<button class="tab active" data-tab="dues"><span class="nav-icon nav-cyan">💳</span><span>الاشتراكات والتحصيل</span></button>
+<button class="tab" data-tab="apartments"><span class="nav-icon nav-purple">🏠</span><span>الشقق والسكان</span></button>
+<button class="tab" data-tab="expenses"><span class="nav-icon nav-orange">🧾</span><span>المصروفات</span></button>
+<button class="tab" data-tab="reports"><span class="nav-icon nav-blue">📊</span><span>التقارير</span></button>
+<button class="tab" data-tab="backup"><span class="nav-icon nav-green">☁️</span><span>النسخ الاحتياطي</span></button>
+<button class="tab" data-tab="manage"><span class="nav-icon nav-pink">🗂️</span><span>السجلات</span></button>
+</nav>
+<section id="dues" class="active">
+<div class="card">
+  <div class="toolbar"><div class="field"><label>الشهر</label><input type="month" id="month"></div><button class="primary" id="makeDues">إنشاء مستحقات الشهر</button></div>
+  <div class="notice">من يناير إلى يونيو 2026: الدور الأول 200 جنيه وباقي الأدوار 250 جنيه. من يوليو 2026 وما بعده: الدور الأول 250 جنيه وباقي الأدوار 300 جنيه. الدفعات تُخصم من أقدم شهر مستحق أولاً.</div>
+  <div id="duesStatusSummary" class="dues-summary"></div><div class="table-wrap"><table><thead><tr><th>الشقة</th><th>الاشتراك</th><th>مدفوع هذا الشهر</th><th>المتبقي</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="duesBody"></tbody></table></div>
+</div>
+<div class="card" style="margin-top:14px"><h3>آخر الدفعات</h3><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الشقة</th><th>المبلغ</th><th>ملاحظات</th></tr></thead><tbody id="recentPayments"></tbody></table></div></div>
+</section>
+<section id="apartments"><div class="card"><h3>بيانات الشقق</h3><p class="muted">عدد الشقق قابل للتعديل. لا يمكن تقليل العدد إذا كانت الشقق المراد إزالتها تحتوي على سجلات مالية؛ حفاظًا على البيانات.</p><div class="toolbar"><div class="field"><label for="apartmentCountInput">عدد الشقق</label><input id="apartmentCountInput" type="number" min="1" max="300" step="1" value="22"></div><button type="button" class="primary" id="applyApartmentCount">تطبيق العدد</button></div><div class="table-wrap"><table><thead><tr><th>اسم صاحب الشقة</th><th>الاشتراك الشهري</th><th>تعديل الاسم</th><th>رقم الهاتف</th><th>إجراء</th></tr></thead><tbody id="aptBody"></tbody></table></div></div></section>
+<section id="aptPage"><div class="toolbar"><button id="backToApartments">← العودة إلى الشقق</button><button class="primary" id="aptPagePay">تسجيل دفعة لهذه الشقة</button><button type="button" class="apt-debt-whatsapp" id="aptPageDebtWhatsApp">📲 إرسال المديونية على واتساب</button></div><div class="card"><h2 id="aptPageTitle">حساب الشقة</h2><p class="muted" id="aptPageContact"></p><div class="field" style="margin:12px 0"><label for="aptPageNotes">ملاحظات خاصة بالشقة</label><textarea id="aptPageNotes" rows="4" placeholder="اكتب أي ملاحظات تخص الشقة هنا..."></textarea></div><div class="stats"><div class="card stat"><small>إجمالي المستحق</small><strong id="aptTotalDue">0</strong></div><div class="card stat"><small>إجمالي المدفوع</small><strong id="aptTotalPaid">0</strong></div><div class="card stat"><small>المتبقي</small><strong id="aptTotalDebt">0</strong></div></div></div><div class="card" style="margin-top:14px"><h3>كشف الاشتراكات شهر بشهر</h3><div class="table-wrap"><table><thead><tr><th>الشهر</th><th>الاشتراك</th><th>المدفوع</th><th>المتبقي</th><th>الحالة</th></tr></thead><tbody id="aptPageMonths"></tbody></table></div></div><div class="card" style="margin-top:14px"><h3>سجل دفعات الشقة</h3><div class="table-wrap"><table><thead><tr><th>تاريخ الدفع</th><th>الشهر المحتسب</th><th>المبلغ</th><th>ملاحظات</th><th>الإيصال</th></tr></thead><tbody id="aptPagePayments"></tbody></table></div></div></section>
+<section id="expenses"><div class="card"><h3>تسجيل مصروف جديد</h3><div class="toolbar"><div class="field"><label>التاريخ</label><input type="date" id="expDate"></div><div class="field"><label>نوع المصروف</label><select id="expType"><option>كهرباء</option><option>أسانسير</option><option>نظافة</option><option>صيانة</option><option>مياه</option><option>أخرى</option></select></div><div class="field"><label>المبلغ بالجنيه</label><input type="number" id="expAmount" min="0.01" step="0.01" placeholder="المبلغ"></div><div class="field"><label>البيان</label><input id="expNote" placeholder="تفاصيل المصروف"></div><button class="primary" id="addExpense">حفظ المصروف</button></div></div><div class="card" style="margin-top:14px"><h3>مصروفات كل شهر</h3><div class="toolbar"><div class="field"><label for="expenseMonth">اختر الشهر</label><select id="expenseMonth"></select></div><div class="field"><label>إجمالي مصروفات الشهر</label><strong id="expenseMonthTotal">0 جنيه</strong></div></div><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>النوع</th><th>البيان</th><th>المبلغ</th><th>إجراء</th></tr></thead><tbody id="expBody"></tbody></table></div></div></section>
+<section id="reports">
+<div class="grid2">
+  <div class="card"><h3>ملخص الحسابات</h3><p>إجمالي التحصيل: <b id="rPaid">0</b> ج.م</p><p>إجمالي المصروفات: <b id="rExp">0</b> ج.م</p><p>المرحل من السنة الماضية: <b id="rCarryForward">0</b> ج.م</p><p>إضافات أخرى: <b id="rExtraAdd">0</b> ج.م</p><p>خصومات أخرى: <b id="rExtraDeduct">0</b> ج.م</p><p>صافي الرصيد بعد الإضافات والخصومات والمصروفات: <b id="rBalance">0</b> ج.م</p><p>إجمالي المديونيات: <b id="rDebt">0</b> ج.م</p></div>
+  <div class="card"><h3>ملخص الاشتراكات</h3><p>من يناير إلى يونيو 2026: الدور الأول 600 جنيه شهرياً، وباقي الأدوار 4,500 جنيه، والإجمالي 5,100 جنيه.</p><p>من يوليو 2026 وما بعده: الدور الأول 750 جنيه شهرياً، وباقي الأدوار 5,400 جنيه، والإجمالي 6,150 جنيه.</p><button onclick="window.print()">طباعة التقرير</button></div>
+</div>
+<div class="card" style="margin-top:14px"><h3>المديونيات حسب الشقة</h3><div class="table-wrap"><table><thead><tr><th>الشقة</th><th>إجمالي المستحق</th><th>إجمالي المدفوع</th><th>المديونية</th></tr></thead><tbody id="debtBody"></tbody></table></div></div>
+</section>
+<section id="manage">
+ 
+<div class="card"><h3>إدارة الدفعات</h3><p class="muted">اختر شهر الاشتراك المحتسب لعرض دفعاته فقط، ويمكن تعديل أو حذف أي حركة دفع مسجلة.</p><div class="field"><label>اختر شهر الدفعات</label></div><div id="managePaymentMonths" class="month-choices"></div><div class="notice">كل زر يمثل شهراً مستقلاً. اضغط على الشهر لعرض دفعاته فقط.</div><p class="muted">إجمالي دفعات الشهر المحدد: <strong id="managePaymentTotal">0 جنيه</strong></p><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الشقة</th><th>الشهر المحتسب</th><th>المبلغ</th><th>ملاحظات</th><th>إجراء</th></tr></thead><tbody id="managePayments"></tbody></table></div></div>
+<div class="card" style="margin-top:14px"><h3>إدارة الاشتراكات الشهرية</h3><p class="muted">يمكن تعديل مبلغ الاشتراك وإجمالي المدفوع؛ تعديل المدفوع يحدّث سجلات الدفعات والإيصالات.</p><div class="table-wrap"><table><thead><tr><th>الشهر</th><th>الشقة</th><th>المبلغ</th><th>المدفوع</th><th>إجراء</th></tr></thead><tbody id="manageCharges"></tbody></table></div></div>
+<div class="card" style="margin-top:14px"><h3>إدارة المصروفات</h3><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>النوع</th><th>البيان</th><th>المبلغ</th><th>إجراء</th></tr></thead><tbody id="manageExpenses"></tbody></table></div></div>
+</section>
+<section id="backup"><div class="card"><h3>حفظ واسترجاع البيانات</h3><p class="muted">بيانات البرنامج محفوظة على نفس الجهاز والمتصفح. احتفظ بنسخة احتياطية دورياً، خصوصاً قبل تغيير الهاتف أو المتصفح.</p><div class="toolbar"><button class="primary" id="exportBtn">تنزيل نسخة احتياطية</button><div class="field"><label>استرجاع نسخة سابقة</label><input type="file" id="importFile" accept="application/json"></div></div><button class="tab danger" id="resetBtn">مسح كل البيانات</button></div></section>
+<div class="footer">نسخة مستقلة تعمل على هذا الجهاز فقط — لا توجد سحابة أو مزامنة.</div>
+<div class="modal" id="extraDeductModal"><div class="dialog"><h3>تسجيل مبالغ تخصم من الرصيد</h3><div class="card stat" style="margin-bottom:12px"><small>إجمالي مبالغ الخصم</small><strong id="sExtraDeduct">0</strong></div><p class="muted">أضف كل خصم كبند مستقل مع ملاحظة توضح سببه.</p><div class="toolbar"><div class="field"><label for="extraDeductAmount">المبلغ بالجنيه</label><input id="extraDeductAmount" type="number" min="0.01" step="0.01" placeholder="المبلغ"></div><div class="field"><label for="extraDeductNote">ملاحظات / سبب الخصم</label><input id="extraDeductNote" placeholder="اكتب سبب الخصم"></div><button class="primary" id="addExtraDeduct">إضافة الخصم</button></div><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>الملاحظات</th><th>إجراء</th></tr></thead><tbody id="extraDeductBody"></tbody></table></div><div class="dialog-actions"><button type="button" class="primary" id="closeExtraDeductModal">إغلاق</button></div></div></div>
+<div class="modal" id="duesGroupModal"><div class="dialog"><h3 id="duesGroupTitle">قائمة الشقق</h3><div id="duesGroupList"></div><div class="dialog-actions"><button type="button" class="primary" onclick="document.getElementById('duesGroupModal').classList.remove('open')">إغلاق</button></div></div></div>
+<div class="modal" id="modal"><div class="dialog"><h3 id="modalTitle">تسجيل دفعة</h3><div id="modalContent"></div><div class="dialog-actions"><button class="primary" id="modalSave">حفظ</button><button id="modalCancel">إلغاء</button></div></div></div>
+<div class="modal" id="receiptModal"><div class="dialog"><div id="receiptContent"></div><div class="dialog-actions no-print"><button class="primary" id="receiptWhatsApp">إرسال واتساب</button><button id="receiptPrint">طباعة الإيصال</button><button id="receiptClose">إغلاق</button></div></div></div>
+<script>
+'use strict';
+function showDuesGroup(key){
+ const month=document.getElementById('month').value;
+ const groups={unpaid:'لم يسددوا',partial:'سداد جزئي',paid:'مسدد بالكامل'};
+ if(!groups[key])return;
+ const items=db.apartments.map(a=>{
+  const due=dueFor(a.id,month),paid=paidFor(a.id,month),remaining=Math.max(0,due-paid);
+  const status=remaining===0?'paid':paid>0?'partial':'unpaid';
+  return {a,due,paid,remaining,status};
+ }).filter(x=>x.due>0&&x.status===key);
+ document.getElementById('duesGroupTitle').textContent=groups[key]+' — '+items.length+' شقة';
+ document.getElementById('duesGroupList').innerHTML=items.length?'<div class="table-wrap"><table style="min-width:0"><thead><tr><th>الشقة / السكان</th><th>الاشتراك</th><th>المدفوع</th><th>المتبقي</th></tr></thead><tbody>'+items.map(({a,due,paid,remaining})=>'<tr><td>'+aptOwnerCell(a)+'</td><td>'+money(due)+'</td><td>'+money(paid)+'</td><td>'+money(remaining)+'</td></tr>').join('')+'</tbody></table></div>':'<p class="empty">لا توجد شقق في هذه الحالة.</p>';
+ document.getElementById('duesGroupModal').classList.add('open');
+}
+const KEY='buildingAccountsStandaloneV1';
+const defaultData={apartments:[],charges:[],payments:[],expenses:[],carryForward:0,extraAdd:0,extraDeduct:0,standaloneEntry:null};
+let db=load(),currentApt=null,selectedManagePaymentMonth="";
+
+function freshData(){
+const d={apartments:[],charges:[],payments:[],expenses:[],carryForward:0,extraAdd:0,extraDeduct:0,extraDeductions:[],standaloneEntry:null};
+for(let i=0;i<22;i++){const floor=Math.floor(i/3)+1,num=(i%3)+1;d.apartments.push({id:`${floor}-${num}`,floor,num,name:'',phone:''});}
+return d;
+}
+function load(){
+try{
+  const raw=localStorage.getItem(KEY);
+  if(raw){
+   const d=JSON.parse(raw);
+   if(d&&Array.isArray(d.apartments)&&d.apartments.length>=1){
+    d.charges=Array.isArray(d.charges)?d.charges:[];
+    d.payments=Array.isArray(d.payments)?d.payments:[];
+    d.expenses=Array.isArray(d.expenses)?d.expenses:[];
+    d.carryForward=Number.isFinite(Number(d.carryForward))?Number(d.carryForward):0;
+    d.extraAdd=Number.isFinite(Number(d.extraAdd))?Number(d.extraAdd):0;
+    d.extraDeduct=Number.isFinite(Number(d.extraDeduct))?Number(d.extraDeduct):0;
+    d.extraDeductions=Array.isArray(d.extraDeductions)?d.extraDeductions:[];
+    if(!d.extraDeductions.length&&d.extraDeduct>0)d.extraDeductions.push({id:makeId(),amount:d.extraDeduct,note:"خصم سابق قبل تحديث البنود",date:localDate()});
+    d.extraDeduct=d.extraDeductions.reduce((s,x)=>s+(Number(x.amount)||0),0);
+    return d;
+   }
+  }
+}catch(e){console.error('تعذر قراءة البيانات المحفوظة',e)}
+return freshData();
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(db));render()}
+function money(n){return (Number(n)||0).toLocaleString('en-US',{maximumFractionDigits:2})}
+function localDate(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function monthNow(){return localDate().slice(0,7)}
+function aptName(a){const serial=(a.floor-1)*3+a.num;return `شقة ${serial} — الدور ${a.floor}`}
+function floorColor(f){return ['#fce8e6','#e8f0fe','#e6f4ea','#fff4d6','#f3e8fd','#e0f2f1','#fce4ec'][(Number(f)-1)%7]||'#ffffff'}
+function aptOwnerCell(a){return `<span style="font-weight:700">${esc(a.name||'اسم غير مسجل')}</span><small style="display:block;opacity:.75">${esc(aptName(a))}</small>`}
+function fee(a,m){return m<'2026-07'?(a.floor===1?200:250):(a.floor===1?250:300)}
+function monthTotal(m){return db.apartments.reduce((sum,a)=>sum+fee(a,m),0)}
+function paidFor(apt,month){return db.payments.filter(p=>p.apt===apt&&p.month===month).reduce((s,p)=>s+(Number(p.amount)||0),0)}
+function ensureMonth(m){
+let made=0;
+db.apartments.forEach(a=>{
+  const existing=db.charges.find(c=>c.apt===a.id&&c.month===m);
+  if(!existing){
+   db.charges.push({id:`${m}_${a.id}`,apt:a.id,month:m,amount:fee(a,m)});made++;
+  }else if(Number(existing.amount)===0){
+   // قد يكون سجل الشهر أُنشئ سابقاً لتسجيل دفعة مقدمة؛ أضف قيمة الاشتراك دون حذف الدفعة.
+   existing.amount=fee(a,m);made++;
+  }
+});
+return made;
+}
+function syncOldCharges(){
+db.charges.forEach(c=>{
+  const a=db.apartments.find(x=>x.id===c.apt);
+  if(a&&paidFor(c.apt,c.month)===0)c.amount=fee(a,c.month);
+});
+}
+function dueFor(apt,month){return db.charges.filter(c=>c.apt===apt&&c.month===month).reduce((s,c)=>s+(Number(c.amount)||0),0)}
+function debtFor(apt){return db.charges.filter(c=>c.apt===apt).reduce((s,c)=>s+(Number(c.amount)||0),0)-db.payments.filter(p=>p.apt===apt).reduce((s,p)=>s+(Number(p.amount)||0),0)}
+function allocate(apt,amount,date,note){
+let left=amount;
+const receiptNo='REC-'+date.replace(/-/g,'')+'-'+makeId().slice(-6).toUpperCase();
+const open=db.charges.filter(c=>c.apt===apt).sort((a,b)=>a.month.localeCompare(b.month));
+for(const c of open){
+  const rem=(Number(c.amount)||0)-paidFor(apt,c.month);
+  if(rem<=0)continue;
+  const take=Math.min(left,rem);
+  if(take>0){db.payments.push({id:makeId(),apt,month:c.month,amount:take,date,note,receiptNo});left-=take}
+  if(left<=0)break;
+}
+if(left>0){
+  const m=date.slice(0,7);
+  let c=db.charges.find(c=>c.apt===apt&&c.month===m);
+  if(!c){c={id:`${m}_${apt}`,apt,month:m,amount:0};db.charges.push(c)}
+  db.payments.push({id:makeId(),apt,month:m,amount:left,date,note:note||'دفعة مقدمة',receiptNo});
+}
+return receiptNo;
+}
+function makeId(){return (crypto&&crypto.randomUUID)?crypto.randomUUID():`${Date.now()}_${Math.random().toString(16).slice(2)}`}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+function applyApartmentCount(){
+ const input=document.getElementById('apartmentCountInput');
+ const count=Number(input.value);
+ if(!Number.isInteger(count)||count<1||count>300){alert('أدخل عدد شقق صحيحًا من 1 إلى 300.');input.value=db.apartments.length;return;}
+ const current=db.apartments.length;
+ if(count===current)return;
+ if(count<current){
+  const removing=db.apartments.slice(count);
+  const ids=new Set(removing.map(a=>a.id));
+  const hasHistory=db.charges.some(x=>ids.has(x.apt))||db.payments.some(x=>ids.has(x.apt));
+  if(hasHistory){alert('لا يمكن تقليل العدد لأن الشقق الأخيرة المطلوب تقليلها لها اشتراكات أو دفعات مسجلة. لم يتم حذف أي بيانات.');input.value=current;return;}
+  if(!confirm('سيتم إزالة '+(current-count)+' شقة فارغة من نهاية القائمة فقط. هل تريد المتابعة؟')){input.value=current;return;}
+  db.apartments=db.apartments.slice(0,count);
+ }else{
+  for(let i=current;i<count;i++){
+   const floor=Math.floor(i/3)+1,num=(i%3)+1,id=`${floor}-${num}`;
+   if(db.apartments.some(a=>a.id===id)){alert('تعذر إنشاء رقم شقة مكرر.');input.value=current;return;}
+   db.apartments.push({id,floor,num,name:'',phone:''});
+  }
+ }
+ save();
+}
+document.getElementById('applyApartmentCount').onclick=applyApartmentCount;
+function render(){
+const totalDue=db.charges.reduce((s,c)=>s+(Number(c.amount)||0),0);
+const totalPaid=db.payments.reduce((s,p)=>s+(Number(p.amount)||0),0);
+const exp=db.expenses.reduce((s,e)=>s+(Number(e.amount)||0),0);
+const debt=totalDue-totalPaid;
+const monthInput=document.getElementById('month');
+const m=monthInput.value||monthNow();
+document.getElementById('sDue').textContent=money(monthTotal(m))+' ج.م';
+document.getElementById('sPaid').textContent=money(totalPaid)+' ج.م';
+document.getElementById('sDebt').textContent=money(debt)+' ج.م';
+document.getElementById('sExpense').textContent=money(exp)+' ج.م';
+document.getElementById('carryForwardInput').value=Number(db.carryForward)||0;
+document.getElementById('extraAddInput').value=Number(db.extraAdd)||0;
+const deductionsTotal=db.extraDeductions.reduce((s,x)=>s+(Number(x.amount)||0),0);
+db.extraDeduct=deductionsTotal;
+document.getElementById('sExtraDeduct').textContent=money(deductionsTotal);
+document.getElementById('sBalance').textContent=money((Number(db.carryForward)||0)+totalPaid+(Number(db.extraAdd)||0)-deductionsTotal-exp)+' ج.م';
+renderExtraDeductions();
+renderStandaloneEntry();
+
+const classified=db.apartments.map(a=>{
+  const due=dueFor(a.id,m),paid=paidFor(a.id,m),rem=Math.max(0,due-paid);
+  const status=rem===0?'مسدد':paid>0?'جزئي':'لم يسدد';
+  const group=rem===0?'paid':paid>0?'partial':'unpaid';
+  return {a,due,paid,rem,status,group};
+}).filter(x=>x.due>0);
+const groupDefs=[
+  {key:'unpaid',title:'لم يسددوا',color:'#fee2e2',text:'#991b1b'},
+  {key:'partial',title:'سداد جزئي',color:'#fef3c7',text:'#92400e'},
+  {key:'paid',title:'مسدد بالكامل',color:'#dcfce7',text:'#166534'}
+];
+const countFor=key=>classified.filter(x=>x.group===key).length;
+const rows=groupDefs.map(g=>{
+  const items=classified.filter(x=>x.group===g.key);
+  if(!items.length)return '';
+  const heading=`<tr><td colspan="6" style="background:${g.color};color:${g.text};font-weight:800;padding:12px">${g.title} — ${items.length} شقة</td></tr>`;
+  const body=items.map(({a,due,paid,rem,status})=>`<tr style="background:${floorColor(a.floor)};color:#18332e"><td>${aptOwnerCell(a)}</td><td>${money(due||fee(a,m))}</td><td>${money(paid)}</td><td>${money(rem)}</td><td><span class="pill ${rem===0&&due>0?'':paid>0?'partial':'unpaid'}">${status}</span></td><td><button class="small primary" onclick="openPay('${a.id}')">تسجيل دفعة</button></td></tr>`).join('');
+  return heading+body;
+}).join('');
+document.getElementById('duesBody').innerHTML=rows||'<tr><td colspan="6" class="empty">لا توجد شقق</td></tr>';
+const summary=document.getElementById('duesStatusSummary');
+if(summary)summary.innerHTML=groupDefs.map(g=>`<button type="button" class="dues-summary-chip" onclick="showDuesGroup('${g.key}')" style="border:0;cursor:pointer;background:${g.color};color:${g.text}">${g.title}: <b>${countFor(g.key)}</b> <span aria-hidden="true">⌄</span></button>`).join('');
+
+const recent=[...db.payments].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,8);
+document.getElementById('recentPayments').innerHTML=recent.length?recent.map(p=>{
+  const a=db.apartments.find(a=>a.id===p.apt);
+  return `<tr${a?` style="background:${floorColor(a.floor)};color:#18332e"`:''}><td>${esc(p.date||'')}</td><td>${a?aptOwnerCell(a):esc(p.apt)}</td><td>${money(p.amount)}</td><td>${esc(p.note||'—')}</td></tr>`;
+}).join(''):'<tr><td colspan="4" class="empty">لا توجد دفعات مسجلة</td></tr>';
+
+document.getElementById('apartmentCountInput').value=db.apartments.length;
+document.getElementById('aptBody').innerHTML=db.apartments.map(a=>
+  `<tr style="background:${floorColor(a.floor)};color:#18332e"><td>${aptOwnerCell(a)}</td><td>${fee(a,m)} جنيه</td><td><input aria-label="اسم صاحب الشقة" value="${esc(a.name)}" onchange="updateApt('${a.id}','name',this.value)" placeholder="اسم صاحب الشقة"></td><td><input aria-label="رقم الهاتف" value="${esc(a.phone)}" onchange="updateApt('${a.id}','phone',this.value)" placeholder="رقم الهاتف"></td><td><button class="small action-apartment" onclick="showAptPage('${a.id}')">فتح صفحة الشقة</button></td></tr>`
+).join('');
+
+renderExpenses();
+
+document.getElementById('rPaid').textContent=money(totalPaid);
+document.getElementById('rExp').textContent=money(exp);
+document.getElementById('rCarryForward').textContent=money(Number(db.carryForward)||0);
+document.getElementById('rExtraAdd').textContent=money(Number(db.extraAdd)||0);
+document.getElementById('rExtraDeduct').textContent=money(db.extraDeductions.reduce((s,x)=>s+(Number(x.amount)||0),0));
+document.getElementById('rBalance').textContent=money((Number(db.carryForward)||0)+totalPaid+(Number(db.extraAdd)||0)-db.extraDeductions.reduce((s,x)=>s+(Number(x.amount)||0),0)-exp);
+document.getElementById('rDebt').textContent=money(debt);
+document.getElementById('debtBody').innerHTML=db.apartments.map(a=>{
+  const due=db.charges.filter(c=>c.apt===a.id).reduce((s,c)=>s+(Number(c.amount)||0),0);
+  const p=db.payments.filter(p=>p.apt===a.id).reduce((s,p)=>s+(Number(p.amount)||0),0);
+  return `<tr style="background:${floorColor(a.floor)};color:#18332e"><td>${aptOwnerCell(a)}</td><td>${money(due)}</td><td>${money(p)}</td><td>${money(due-p)}</td></tr>`;
+}).join('');
+  renderManagement();
+}
+
+function renderExpenses(){
+ const monthSelect=document.getElementById('expenseMonth');if(!monthSelect)return;
+ const months=[...new Set([localDate().slice(0,7),...db.expenses.map(e=>(e.date||'').slice(0,7)).filter(Boolean)])].sort().reverse();
+ const previous=monthSelect.value;
+ monthSelect.innerHTML=months.map(m=>`<option value="${m}">${m}</option>`).join('');
+ monthSelect.value=months.includes(previous)?previous:(months[0]||'');
+ const selected=monthSelect.value;
+ const expenses=db.expenses.filter(e=>(e.date||'').slice(0,7)===selected).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ document.getElementById('expenseMonthTotal').textContent=money(expenses.reduce((sum,e)=>sum+(Number(e.amount)||0),0))+' جنيه';
+ document.getElementById('expBody').innerHTML=expenses.map(e=>`<tr><td>${esc(e.date||'')}</td><td>${esc(e.type||'')}</td><td>${esc(e.note||'—')}</td><td>${money(e.amount)}</td><td><button class="small" onclick="editExpense('${e.id}')">تعديل</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد مصروفات لهذا الشهر</td></tr>';
+}
+function renderStandaloneEntry(){
+ const entry=db.standaloneEntry;
+ document.getElementById('standaloneEntryAmount').value=entry&&Number(entry.amount)>0?entry.amount:'';
+ document.getElementById('standaloneEntryNote').value=entry&&entry.note?entry.note:'';
+ document.getElementById('standaloneEntrySaved').textContent=entry&&Number(entry.amount)>0
+  ? 'المبلغ المسجل: '+money(entry.amount)+' جنيه — الملاحظة: '+(entry.note||'بدون ملاحظة')+(entry.date?' — التاريخ: '+entry.date:'')
+  : 'لا يوجد مبلغ مسجل';
+}
+function renderExtraDeductions(){
+ const rows=db.extraDeductions||[];
+ document.getElementById("extraDeductBody").innerHTML=rows.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).map(x=>'<tr><td>'+esc(x.date||"")+'</td><td>'+money(x.amount)+' جنيه</td><td>'+esc(x.note||"—")+'</td><td><div class="row-actions"><button class="small" onclick="editExtraDeduct(\''+x.id+'\')">تعديل</button><button class="small danger-text" onclick="deleteExtraDeduct(\''+x.id+'\')">حذف</button></div></td></tr>').join("")||'<tr><td colspan="4" class="empty">لم يتم تسجيل خصومات بعد</td></tr>';
+}
+function selectManagePaymentMonth(month){selectedManagePaymentMonth=month;renderManagement()}
+function editExtraDeduct(id){
+ const x=db.extraDeductions.find(v=>v.id===id);if(!x)return;
+ const amount=prompt("المبلغ الجديد:",String(x.amount));if(amount===null)return;
+ const n=Number(amount);if(!(n>0)){alert("أدخل مبلغاً صحيحاً أكبر من صفر");return}
+ const note=prompt("ملاحظات / سبب الخصم:",x.note||"");if(note===null)return;
+ x.amount=n;x.note=note;db.extraDeduct=db.extraDeductions.reduce((s,v)=>s+(Number(v.amount)||0),0);save();
+}
+function deleteExtraDeduct(id){
+ const x=db.extraDeductions.find(v=>v.id===id);if(!x)return;
+ if(!confirm("تأكيد حذف بند الخصم "+money(x.amount)+" جنيه؟"))return;
+ db.extraDeductions=db.extraDeductions.filter(v=>v.id!==id);db.extraDeduct=db.extraDeductions.reduce((s,v)=>s+(Number(v.amount)||0),0);save();
+}
+function renderManagement(){
+ const aptLabel=id=>{const a=db.apartments.find(x=>x.id===id);return a?aptOwnerCell(a):esc(String(id))};
+ const aptRowStyle=id=>{const a=db.apartments.find(x=>x.id===id);return a?' style="background:'+floorColor(a.floor)+'"':''};
+ const paymentMonths=[...new Set([monthNow(),...db.payments.map(p=>p.month).filter(Boolean)])].sort().reverse();
+ if(!paymentMonths.includes(selectedManagePaymentMonth))selectedManagePaymentMonth=paymentMonths[0]||"";
+ document.getElementById("managePaymentMonths").innerHTML=paymentMonths.map(m=>{const total=db.payments.filter(p=>p.month===m).reduce((s,p)=>s+(Number(p.amount)||0),0);return '<button type="button" class="month-choice '+(m===selectedManagePaymentMonth?'active':'')+'" onclick="selectManagePaymentMonth(\''+m+'\')">'+esc(m)+'<small>'+money(total)+' جنيه</small></button>';}).join("");
+ const selectedPaymentMonth=selectedManagePaymentMonth;
+ const pays=db.payments.filter(p=>p.month===selectedPaymentMonth).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ document.getElementById('managePaymentTotal').textContent=money(pays.reduce((sum,p)=>sum+(Number(p.amount)||0),0))+' جنيه';
+ document.getElementById('managePayments').innerHTML=pays.map(p=>`<tr${aptRowStyle(p.apt)}><td>${esc(p.date||'')}</td><td>${aptLabel(p.apt)}</td><td>${esc(p.month||'')}</td><td>${money(p.amount)}</td><td>${esc(p.note||'—')}</td><td><div class="row-actions"><button class="small action-edit" onclick="editPayment('${p.id}')">تعديل</button><button class="small action-delete" onclick="deletePayment('${p.id}')">حذف</button></div></td></tr>`).join('')||'<tr><td colspan="6" class="empty">لا توجد دفعات لهذا الشهر</td></tr>';
+ const charges=[...db.charges].sort((a,b)=>b.month.localeCompare(a.month)||String(a.apt).localeCompare(String(b.apt)));
+ document.getElementById('manageCharges').innerHTML=charges.map(ch=>`<tr${aptRowStyle(ch.apt)}><td>${esc(ch.month)}</td><td>${aptLabel(ch.apt)}</td><td>${money(ch.amount)}</td><td>${money(paidFor(ch.apt,ch.month))}</td><td><div class="row-actions"><button class="small action-edit" onclick="editCharge('${ch.id}')">تعديل</button><button class="small action-delete" onclick="deleteCharge('${ch.id}')">حذف</button></div></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد اشتراكات مسجلة</td></tr>';
+ const expenses=[...db.expenses].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ document.getElementById('manageExpenses').innerHTML=expenses.map(e=>`<tr><td>${esc(e.date||'')}</td><td>${esc(e.type||'')}</td><td>${esc(e.note||'—')}</td><td>${money(e.amount)}</td><td><button class="small" onclick="editExpense('${e.id}')">تعديل</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد مصروفات</td></tr>';
+}
+function editPayment(id){
+ const p=db.payments.find(x=>x.id===id);if(!p)return;
+ const amount=prompt('المبلغ الجديد:',String(p.amount));if(amount===null)return;
+ const n=Number(amount);if(!(n>0)){alert('أدخل مبلغاً صحيحاً أكبر من صفر');return}
+ const date=prompt('تاريخ الدفع (YYYY-MM-DD):',p.date||localDate());if(date===null)return;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){alert('صيغة التاريخ غير صحيحة');return}
+ const note=prompt('الملاحظات:',p.note||'');if(note===null)return;
+ p.amount=n;p.date=date;p.note=note;save();
+}
+function deletePayment(id){
+ const p=db.payments.find(x=>x.id===id);if(!p)return;
+ if(!confirm('تأكيد حذف دفعة '+money(p.amount)+' جنيه للشهر '+p.month+'؟'))return;
+ db.payments=db.payments.filter(x=>x.id!==id);save();
+}
+function editExpense(id){
+ const e=db.expenses.find(x=>x.id===id);if(!e)return;
+ const amount=prompt('المبلغ الجديد:',String(e.amount));if(amount===null)return;
+ const n=Number(amount);if(!(n>0)){alert('أدخل مبلغاً صحيحاً أكبر من صفر');return}
+ const date=prompt('التاريخ (YYYY-MM-DD):',e.date||localDate());if(date===null)return;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){alert('صيغة التاريخ غير صحيحة');return}
+ const type=prompt('نوع المصروف:',e.type||'أخرى');if(type===null)return;
+ const note=prompt('البيان:',e.note||'');if(note===null)return;
+ e.amount=n;e.date=date;e.type=type;e.note=note;save();
+}
+function editCharge(id){
+ const ch=db.charges.find(x=>x.id===id);if(!ch)return;
+ const amount=prompt('قيمة الاشتراك الجديدة بالجنيه:',String(ch.amount));if(amount===null)return;
+ const n=Number(amount);if(!Number.isFinite(n)||n<0){alert('أدخل مبلغ اشتراك صحيحاً');return}
+ const currentPaid=paidFor(ch.apt,ch.month);
+ const paidInput=prompt('إجمالي المدفوع الجديد لهذا الشهر بالجنيه\\nسيتم تحديث دفعات وإيصالات هذا الشهر:',String(currentPaid));if(paidInput===null)return;
+ const targetPaid=Number(paidInput);if(!Number.isFinite(targetPaid)||targetPaid<0){alert('أدخل إجمالي مدفوع صحيحاً أو صفراً');return}
+ ch.amount=n;
+ let rows=db.payments.filter(p=>p.apt===ch.apt&&p.month===ch.month).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ let difference=targetPaid-currentPaid;
+ if(difference<0){
+  let reduce=-difference;
+  for(const p of rows){
+   if(reduce<=0)break;
+   const oldAmount=Number(p.amount)||0;
+   const cut=Math.min(oldAmount,reduce);
+   p.amount=oldAmount-cut;reduce-=cut;
+  }
+  db.payments=db.payments.filter(p=>(Number(p.amount)||0)>0);
+ }else if(difference>0){
+  if(rows.length){
+   const p=rows[0];
+   if(!p.receiptNo)p.receiptNo='REC-'+(p.date||localDate()).replace(/-/g,'')+'-'+makeId().slice(-6).toUpperCase();
+   p.amount=(Number(p.amount)||0)+difference;
+  }else{
+   const date=ch.month+'-01';
+   db.payments.push({id:makeId(),apt:ch.apt,month:ch.month,amount:difference,date,note:'تعديل إجمالي المدفوع من إدارة الاشتراكات',receiptNo:'REC-'+date.replace(/-/g,'')+'-'+makeId().slice(-6).toUpperCase()});
+  }
+ }
+ save();
+}
+function deleteCharge(id){
+ const ch=db.charges.find(x=>x.id===id);if(!ch)return;
+ if(paidFor(ch.apt,ch.month)>0){alert('لا يمكن حذف هذا الاشتراك لوجود دفعات مرتبطة به. عدّل قيمته بدلاً من حذفه.');return}
+ if(!confirm('تأكيد حذف اشتراك '+ch.month+'؟'))return;
+ db.charges=db.charges.filter(x=>x.id!==id);save();
+}
+
+function updateApt(id,k,v){const a=db.apartments.find(a=>a.id===id);if(!a)return;a[k]=v;localStorage.setItem(KEY,JSON.stringify(db))}
+function openPay(id){
+currentApt=id;const a=db.apartments.find(a=>a.id===id);
+document.getElementById('modalTitle').textContent='تسجيل دفعة — '+aptName(a);
+document.getElementById('modalContent').innerHTML=`<div class="field"><label>المبلغ بالجنيه</label><input type="number" id="payAmount" min="0.01" step="0.01" placeholder="المبلغ"></div><div class="field" style="margin-top:10px"><label>تاريخ الدفع</label><input type="date" id="payDate" value="${localDate()}"></div><div class="field" style="margin-top:10px"><label>ملاحظات / رقم الإيصال</label><input id="payNote" placeholder="اختياري"></div><p class="muted">المديونية الحالية: ${money(debtFor(id))} جنيه. سيتم توزيع الدفعة على أقدم المستحقات أولاً.</p>`;
+document.getElementById('modal').classList.add('open');
+}
+document.getElementById('backToApartments').onclick=()=>{document.querySelectorAll('section').forEach(x=>x.classList.toggle('active',x.id==='apartments'));document.querySelectorAll('.tab[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab==='apartments'));};
+document.getElementById('aptPagePay').onclick=()=>{if(currentApt)openPay(currentApt)};
+document.getElementById('aptPageDebtWhatsApp').onclick=()=>{if(currentApt)sendAptDebtWhatsApp(currentApt)};
+document.getElementById('aptPageNotes').oninput=e=>{const a=db.apartments.find(x=>x.id===currentApt);if(a){a.notes=e.target.value;localStorage.setItem(KEY,JSON.stringify(db));}};
+document.getElementById('modalSave').onclick=()=>{
+const amount=Number(document.getElementById('payAmount').value),date=document.getElementById('payDate').value,note=document.getElementById('payNote').value;
+if(!(amount>0)||!date){alert('من فضلك أدخل مبلغاً وتاريخاً صحيحين');return}
+const receiptNo=allocate(currentApt,amount,date,note);
+document.getElementById('modal').classList.remove('open');save();if(document.getElementById('aptPage').classList.contains('active'))renderAptPage(currentApt);openReceipt(receiptNo);
+};
+document.getElementById('modalCancel').onclick=()=>document.getElementById('modal').classList.remove('open');
+function showAptPage(id){
+currentApt=id;
+document.querySelectorAll('section').forEach(x=>x.classList.toggle('active',x.id==='aptPage'));
+document.querySelectorAll('.tab[data-tab]').forEach(x=>x.classList.remove('active'));
+renderAptPage(id);
+}
+function receiptData(receiptNo){
+const pays=db.payments.filter(p=>p.receiptNo===receiptNo);
+if(!pays.length)return null;
+const a=db.apartments.find(x=>x.id===pays[0].apt);
+return {pays,a,total:pays.reduce((s,p)=>s+(Number(p.amount)||0),0),date:pays[0].date||'',months:[...new Set(pays.map(p=>p.month))].sort()};
+}
+function receiptText(receiptNo){
+const d=receiptData(receiptNo);if(!d)return '';
+const phone=d.a?.phone||'غير مسجل';
+return ['إيصال سداد اشتراك العمارة','رقم الإيصال: '+receiptNo,'الشقة: '+(d.a?aptName(d.a):''),'الاسم: '+(d.a?.name||'غير مسجل'),'تاريخ الدفع: '+d.date,'الشهر/الشهور المحتسبة: '+d.months.join('، '),'تفاصيل المبلغ:',...d.pays.map(p=>p.month+': '+money(p.amount)+' جنيه'),'إجمالي المدفوع: '+money(d.total)+' جنيه','رقم الهاتف المسجل: '+phone,'شكراً لحضرتك.'].join('\n');
+}
+function openReceipt(receiptNo){
+const d=receiptData(receiptNo);if(!d)return;
+const a=d.a||{};
+const rows=d.pays.map(p=>'<tr><td>'+esc(p.month)+'</td><td>'+money(p.amount)+' ج.م</td></tr>').join('');
+document.getElementById('receiptContent').innerHTML='<div class="receipt-paper"><h2>🏢 إيصال سداد</h2><p class="receipt-sub">حسابات العمارة</p><p><b>رقم الإيصال:</b> '+esc(receiptNo)+'</p><p><b>الشقة:</b> '+esc(a?aptName(a):'')+'</p><p><b>اسم الساكن:</b> '+esc(a.name||'غير مسجل')+'</p><p class="receipt-date"><b>تاريخ الدفع:</b> <strong>'+esc(d.date||"غير محدد") +'</strong></p><table><thead><tr><th>الشهر المحتسب</th><th>المبلغ</th></tr></thead><tbody>'+rows+'</tbody></table><div class="receipt-total">الإجمالي: '+money(d.total)+' جنيه</div><p style="text-align:center;color:#64756f">تم استلام المبلغ الموضح أعلاه، وشكراً لالتزامكم.</p></div>';
+document.getElementById('receiptModal').dataset.receipt=receiptNo;
+document.getElementById('receiptModal').classList.add('open');
+}
+document.getElementById('receiptWhatsApp').onclick=async()=>{
+const no=document.getElementById('receiptModal').dataset.receipt;
+const paper=document.querySelector('#receiptContent .receipt-paper');
+if(!no||!paper){alert('افتح الإيصال أولاً ثم أعد المحاولة.');return;}
+try{
+ // html2canvas يلتقط عنصر HTML نفسه، ويتجنب SVG foreignObject غير المدعوم ببعض متصفحات أندرويد.
+ if(typeof window.html2canvas!=='function'){
+  await new Promise((resolve,reject)=>{
+   const existing=document.querySelector('script[data-html2canvas]');
+   if(existing){existing.addEventListener('load',resolve,{once:true});existing.addEventListener('error',reject,{once:true});return;}
+   const script=document.createElement('script');
+   script.src='https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+   script.async=true;script.dataset.html2canvas='1';
+   script.onload=resolve;script.onerror=()=>reject(new Error('تعذر تحميل أداة تصوير الإيصال'));
+   document.head.appendChild(script);
+  });
+ }
+ if(typeof window.html2canvas!=='function')throw new Error('html2canvas-unavailable');
+ const canvas=await window.html2canvas(paper,{
+  scale:2,
+  backgroundColor:'#ffffff',
+  useCORS:true,
+  allowTaint:false,
+  logging:false,
+  width:Math.ceil(paper.getBoundingClientRect().width),
+  height:Math.ceil(paper.getBoundingClientRect().height),
+  windowWidth:document.documentElement.clientWidth,
+  windowHeight:document.documentElement.clientHeight
+ });
+ const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+ if(!blob)throw new Error('png-export');
+ const file=new File([blob],'receipt-'+no+'.png',{type:'image/png'});
+ if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+  try{await navigator.share({files:[file],title:'إيصال سداد اشتراك العمارة',text:'إيصال السداد'});}
+  catch(err){if(err.name!=='AbortError')alert('تعذر فتح مشاركة الصورة. حاول مرة أخرى.');}
+ }else{
+  const url=URL.createObjectURL(blob),link=document.createElement('a');
+  link.href=url;link.download='إيصال-'+no+'.png';link.click();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+  alert('تم تجهيز صورة الإيصال بنفس الشكل الظاهر. افتح واتساب وأرفق الصورة من المعرض.');
+ }
+}catch(err){
+ console.error('Receipt image export failed:',err);
+ alert('تعذر تحويل الإيصال إلى صورة. تأكد من اتصال الإنترنت ثم أعد المحاولة. إذا تكرر الخطأ، استخدم زر طباعة الإيصال مؤقتاً.');
+}
+};
+document.getElementById('receiptPrint').onclick=()=>window.print();
+document.getElementById('receiptClose').onclick=()=>document.getElementById('receiptModal').classList.remove('open');
+function sendAptDebtWhatsApp(id){
+ const a=db.apartments.find(x=>x.id===id);if(!a)return;
+ const charges=db.charges.filter(c=>c.apt===id).slice().sort((x,y)=>(x.month||'').localeCompare(y.month||''));
+ const rows=charges.map(c=>{const due=Number(c.amount)||0,paid=paidFor(id,c.month),remaining=due-paid;return {month:c.month,due,paid,remaining};}).filter(x=>x.remaining>0);
+ const totalDue=charges.reduce((s,c)=>s+(Number(c.amount)||0),0);
+ const totalPaid=db.payments.filter(p=>p.apt===id).reduce((s,p)=>s+(Number(p.amount)||0),0);
+ const totalDebt=totalDue-totalPaid;
+ if(totalDebt<=0){alert('لا توجد مديونية مستحقة على هذه الشقة حالياً.');return;}
+ const lines=[
+  '🏢 *حسابات العمارة*',
+  '📌 *بيان المديونية المستحقة*',
+  'الشقة: '+aptName(a),
+  'اسم الساكن: '+(a.name||'غير مسجل'),
+  'التاريخ: '+localDate(),
+  '',
+  '*تفاصيل الشهور المستحقة:*',
+  ...rows.map(x=>'• '+x.month+' — الاشتراك: '+money(x.due)+' ج.م، المدفوع: '+money(x.paid)+' ج.م، المتبقي: '+money(x.remaining)+' ج.م'),
+  '',
+  'إجمالي المستحق: '+money(totalDue)+' جنيه',
+  'إجمالي المدفوع: '+money(totalPaid)+' جنيه',
+  '*إجمالي المديونية المتبقية: '+money(totalDebt)+' جنيه*',
+  '',
+  'نرجو التكرم بسداد المبلغ المستحق، وشكراً لتعاونكم.'
+ ];
+ const text=lines.join('\n');
+ const phone=String(a.phone||'').replace(/[^0-9]/g,'');
+ const url=phone?'https://wa.me/'+(phone.startsWith('0')?'20'+phone.slice(1):phone)+'?text='+encodeURIComponent(text):'https://wa.me/?text='+encodeURIComponent(text);
+ window.open(url,'_blank','noopener');
+}
+function renderAptPage(id){
+const a=db.apartments.find(x=>x.id===id);if(!a)return;
+const totalDue=db.charges.filter(c=>c.apt===id).reduce((s,c)=>s+(Number(c.amount)||0),0);
+const totalPaid=db.payments.filter(p=>p.apt===id).reduce((s,p)=>s+(Number(p.amount)||0),0);
+document.getElementById('aptPageTitle').textContent=aptName(a)+(a.name?' — '+a.name:'');
+document.getElementById('aptPageContact').textContent='رقم الهاتف: '+(a.phone||'غير مسجل');
+document.getElementById('aptPageNotes').value=a.notes||'';
+document.getElementById('aptTotalDue').textContent=money(totalDue)+' ج.م';
+document.getElementById('aptTotalPaid').textContent=money(totalPaid)+' ج.م';
+document.getElementById('aptTotalDebt').textContent=money(totalDue-totalPaid)+' ج.م';
+const months=[...new Set([...db.charges.filter(c=>c.apt===id).map(c=>c.month),...db.payments.filter(p=>p.apt===id).map(p=>p.month)])].sort();
+document.getElementById('aptPageMonths').innerHTML=months.length?months.map(m=>{const due=dueFor(id,m),paid=paidFor(id,m),remaining=due-paid;const status=due===0?'دفعة مقدمة':remaining<=0?'مسدد':paid>0?'جزئي':'لم يسدد';return '<tr><td>'+esc(m)+'</td><td>'+money(due)+'</td><td>'+money(paid)+'</td><td>'+money(remaining)+'</td><td>'+status+'</td></tr>';}).join(''):'<tr><td colspan="5" class="empty">لا توجد اشتراكات أو دفعات مسجلة لهذه الشقة</td></tr>';
+const pays=db.payments.filter(p=>p.apt===id).slice().sort((x,y)=>(y.date||'').localeCompare(x.date||'')||(y.month||'').localeCompare(x.month||''));
+const seenReceipts=new Set();document.getElementById('aptPagePayments').innerHTML=pays.length?pays.map(p=>{let receipt='—';if(p.receiptNo&&!seenReceipts.has(p.receiptNo)){seenReceipts.add(p.receiptNo);receipt='<button type="button" class="small action-receipt" onclick="openReceipt(\''+esc(p.receiptNo)+'\')">عرض الإيصال</button>';}return '<tr><td>'+esc(p.date||'غير محدد')+'</td><td>'+esc(p.month||'')+'</td><td>'+money(p.amount)+'</td><td>'+esc(p.note||'—')+'</td><td>'+receipt+'</td></tr>';}).join(''):'<tr><td colspan="5" class="empty">لا توجد دفعات مسجلة</td></tr>';
+}
+function deleteExpense(id){if(confirm('هل تريد حذف هذا المصروف؟')){db.expenses=db.expenses.filter(e=>e.id!==id);save()}}
+
+document.querySelectorAll('.tab[data-tab]').forEach(b=>b.addEventListener('click',()=>{
+document.querySelectorAll('.tab[data-tab]').forEach(x=>x.classList.toggle('active',x===b));
+document.querySelectorAll('section').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));
+}));
+function bindBalanceInput(id,key){const el=document.getElementById(id);el.value=Number(db[key])||0;el.onchange=e=>{const raw=e.target.value.trim();const v=raw===''?0:Number(raw);if(!Number.isFinite(v)||v<0){alert('أدخل مبلغاً صحيحاً موجباً أو صفراً');e.target.value=Number(db[key])||0;return;}db[key]=v;save();};}
+bindBalanceInput('carryForwardInput','carryForward');
+bindBalanceInput('extraAddInput','extraAdd');
+document.getElementById('month').value=monthNow();
+document.getElementById('makeDues').onclick=()=>{
+const m=document.getElementById('month').value;
+if(!m){alert('اختر الشهر أولاً');return}
+const n=ensureMonth(m);save();
+alert(n?`تم إنشاء مستحقات ${m} لعدد ${n} شقة`:'مستحقات هذا الشهر موجودة بالفعل');
+};
+document.getElementById('month').onchange=render;
+document.getElementById('expDate').value=localDate();
+document.getElementById('expenseMonth').onchange=renderExpenses;
+
+document.getElementById('saveStandaloneEntry').onclick=()=>{
+ const raw=document.getElementById('standaloneEntryAmount').value.trim();
+ const amount=Number(raw),note=document.getElementById('standaloneEntryNote').value.trim();
+ if(!raw||!(amount>0)){alert('أدخل مبلغاً أكبر من صفر');return}
+ if(!note){alert('اكتب الملاحظة');return}
+ db.standaloneEntry={amount,note,date:localDate()};
+ save();
+ alert('تم حفظ المبلغ والملاحظة بشكل مستقل، دون التأثير على الحسابات.');
+};
+document.getElementById("openExtraDeductModal").onclick=()=>document.getElementById("extraDeductModal").classList.add("open");
+document.getElementById("closeExtraDeductModal").onclick=()=>document.getElementById("extraDeductModal").classList.remove("open");
+document.getElementById("addExtraDeduct").onclick=()=>{
+ const amount=Number(document.getElementById("extraDeductAmount").value);
+ const note=document.getElementById("extraDeductNote").value.trim();
+ if(!(amount>0)){alert("أدخل مبلغاً صحيحاً أكبر من صفر");return}
+ if(!note){alert("اكتب ملاحظة توضح سبب الخصم");return}
+ db.extraDeductions.push({id:makeId(),amount,note,date:localDate()});
+ db.extraDeduct=db.extraDeductions.reduce((s,x)=>s+(Number(x.amount)||0),0);
+ document.getElementById("extraDeductAmount").value="";document.getElementById("extraDeductNote").value="";save();
+};
+document.getElementById('addExpense').onclick=()=>{
+const date=document.getElementById('expDate').value,amount=Number(document.getElementById('expAmount').value);
+if(!date||!(amount>0)){alert('أدخل التاريخ والمبلغ');return}
+db.expenses.push({id:makeId(),date,amount,type:document.getElementById('expType').value,note:document.getElementById('expNote').value});
+document.getElementById('expAmount').value='';document.getElementById('expNote').value='';save();
+};
+document.getElementById('exportBtn').onclick=()=>{
+const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+const url=URL.createObjectURL(blob),a=document.createElement('a');
+a.href=url;a.download='نسخة-احتياطية-حسابات-العمارة.json';a.click();URL.revokeObjectURL(url);
+};
+document.getElementById('importFile').onchange=async e=>{
+const f=e.target.files[0];if(!f)return;
+try{
+  const d=JSON.parse(await f.text());
+  if(!Array.isArray(d.apartments)||d.apartments.length<1||!Array.isArray(d.charges)||!Array.isArray(d.payments)||!Array.isArray(d.expenses))throw Error();
+  if(confirm('سيتم استبدال البيانات الحالية بالنسخة المختارة. متابعة؟')){db=d;db.extraDeductions=Array.isArray(db.extraDeductions)?db.extraDeductions:[];if(!db.extraDeductions.length&&Number(db.extraDeduct)>0)db.extraDeductions.push({id:makeId(),amount:Number(db.extraDeduct),note:'خصم سابق قبل تحديث البنود',date:localDate()});db.extraDeduct=db.extraDeductions.reduce((s,x)=>s+(Number(x.amount)||0),0);save();alert('تم استرجاع النسخة الاحتياطية')}
+}catch(err){alert('الملف غير صالح أو ليس نسخة احتياطية من البرنامج')}
+e.target.value='';
+};
+document.getElementById('resetBtn').onclick=()=>{
+if(confirm('تحذير: سيتم حذف كل بيانات السكان والدفعات والمصروفات. هل أنت متأكد؟')){
+  db=freshData();save();
+}
+};
+
+// إضافة أرقام إيصالات للدفعات القديمة التي لا تحمل رقم إيصال؛ دون تغيير أي بيانات مالية.
+let migratedReceipts=0;
+db.payments.forEach(p=>{
+  if(!p.receiptNo){
+    const date=String(p.date||localDate()).replace(/-/g,'');
+    p.receiptNo='REC-'+date+'-'+makeId().slice(-6).toUpperCase();
+    migratedReceipts++;
+  }
+});
+if(migratedReceipts) console.info('تم تجهيز إيصالات للدفعات القديمة:',migratedReceipts);
+
+// تصحيح مبالغ المستحقات القديمة غير المسددة فقط، دون تغيير أي شهر عليه دفعة.
+syncOldCharges();
+localStorage.setItem(KEY,JSON.stringify(db));
+render();
+
+
+if('serviceWorker'in navigator){
+window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
+}
+</script></body></html>
