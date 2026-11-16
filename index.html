@@ -212,6 +212,41 @@ nav.main-nav .tab.active{background-color:#263b4a!important;color:#fff!important
  box-shadow:none!important;opacity:.14!important
 }
 
+
+/* القائمة الرئيسية: فرض الوضع الداكن على كل أزرارها */
+nav.main-nav{background:transparent!important}
+nav.main-nav button.tab,
+nav.main-nav button.tab:not(.active),
+nav.main-nav button.tab.active{
+ background:#1f2937!important;
+ background-image:none!important;
+ color:#f9fafb!important;
+ border:1px solid #475569!important;
+}
+nav.main-nav button.tab span:not(.nav-icon){color:#f9fafb!important}
+nav.main-nav button.tab.active{
+ background:#263b4a!important;
+ color:#ffffff!important;
+ border:2px solid #22a06b!important;
+}
+nav.main-nav button.tab .nav-icon{color:inherit!important}
+/* بطاقة الخصومات مموهة بلون مطابق للخلفية */
+.card.stat.deduct-total-soft{
+ background:#111827!important;
+ background-color:#111827!important;
+ background-image:none!important;
+ border:1px solid #111827!important;
+ box-shadow:none!important;
+ opacity:.025!important;
+ animation:none!important;
+}
+.card.stat.deduct-total-soft small,
+.card.stat.deduct-total-soft strong{
+ color:#111827!important;
+ text-shadow:none!important;
+}
+.card.stat.deduct-total-soft:hover{opacity:.025!important;box-shadow:none!important}
+
 </style></head>
 <body>
 <header><h1>🏢 حسابات العمارة</h1><p>لوحة متابعة الاشتراكات والتحصيل والمصروفات</p></header>
