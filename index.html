@@ -279,6 +279,12 @@ table tbody tr[style*="background"] td button,
 #extraDeductModal .dialog .card{background:#273449;color:#f9fafb}
 #extraDeductModal .dialog .card small,#extraDeductModal .dialog .card strong{color:#f9fafb}
 
+
+/* الرصيد الحالي وأيقونة الخصومات بعرض الواجهة بالكامل */
+.stats>.balance-wide{grid-column:1/-1;width:100%;box-sizing:border-box;min-height:92px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.stats>.balance-wide strong{font-size:28px}
+.stats>.deduct-launch-wide{grid-column:1/-1;width:100%;box-sizing:border-box;margin:0}
+
 </style></head>
 <body>
 <header><h1>🏢 حسابات العمارة</h1><p>لوحة متابعة الاشتراكات والتحصيل والمصروفات</p></header>
@@ -304,8 +310,8 @@ table tbody tr[style*="background"] td button,
 <div class="card stat"><small>إجمالي المصروفات</small><strong id="sExpense">0 ج.م</strong></div>
 <div class="card stat"><small>المرحل من السنة الماضية (جنيه)</small><input id="carryForwardInput" type="number" step="0.01" value="0" aria-label="المرحل من السنة الماضية" style="font-size:20px;font-weight:750;margin-top:7px;color:var(--ink)"></div>
 <div class="card stat"><small>مبالغ إضافية تضاف للرصيد (جنيه)</small><input id="extraAddInput" type="number" step="0.01" value="0" aria-label="مبالغ إضافية تضاف للرصيد" style="font-size:20px;font-weight:750;margin-top:7px;color:var(--ink)"></div>
-<button type="button" class="deduct-launch" id="openExtraDeductModal"><span class="deduct-launch-icon">➖</span><span>مبالغ تخصم من الرصيد</span></button>
-<div class="card stat stat-glow-red"><small>الرصيد الحالي بعد المصروفات والإضافات والخصومات</small><strong id="sBalance">0 ج.م</strong></div>
+<div class="card stat stat-glow-red balance-wide"><small>الرصيد الحالي بعد المصروفات والإضافات والخصومات</small><strong id="sBalance">0 ج.م</strong></div>
+<button type="button" class="deduct-launch deduct-launch-wide" id="openExtraDeductModal"><span class="deduct-launch-icon">➖</span><span>مبالغ تخصم من الرصيد</span></button>
 </div>
 
 <nav class="main-nav" aria-label="القائمة الرئيسية">
