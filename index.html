@@ -285,6 +285,15 @@ table tbody tr[style*="background"] td button,
 .stats>.balance-wide strong{font-size:28px}
 .stats>.deduct-launch-wide{grid-column:1/-1;width:100%;box-sizing:border-box;margin:0}
 
+
+.standalone-entry-card{background:#1f2937!important;color:#f9fafb!important;border:1px solid #475569}
+.standalone-entry-card>strong,.standalone-entry-card>small{display:block;color:#f9fafb!important}
+.standalone-entry-card>small{margin-top:5px;opacity:.8}
+.standalone-entry-fields{display:grid;grid-template-columns:1fr 2fr auto;gap:10px;align-items:end;margin-top:12px}
+.standalone-entry-fields label{display:flex;flex-direction:column;gap:5px;color:#f9fafb;font-size:13px}
+.standalone-entry-fields input{width:100%;min-width:0;padding:10px;border:1px solid #64748b;border-radius:9px;background:#111827;color:#fff}
+.standalone-entry-saved{margin-top:10px;padding:9px;border-radius:9px;background:#273449;color:#e5e7eb;font-size:13px}
+@media(max-width:560px){.standalone-entry-fields{grid-template-columns:1fr}.standalone-entry-fields button{width:100%}}
 </style></head>
 <body>
 <header><h1>🏢 حسابات العمارة</h1><p>لوحة متابعة الاشتراكات والتحصيل والمصروفات</p></header>
@@ -298,6 +307,16 @@ table tbody tr[style*="background"] td button,
 <div class="card stat"><small>مبالغ إضافية تضاف للرصيد (جنيه)</small><input id="extraAddInput" type="number" step="0.01" value="0" aria-label="مبالغ إضافية تضاف للرصيد" style="font-size:20px;font-weight:750;margin-top:7px;color:var(--ink)"></div>
 <div class="card stat stat-glow-red balance-wide"><small>الرصيد الحالي بعد المصروفات والإضافات والخصومات</small><strong id="sBalance">0 ج.م</strong></div>
 <button type="button" class="deduct-launch deduct-launch-wide" id="openExtraDeductModal"><span class="deduct-launch-icon">➖</span><span>مبالغ تخصم من الرصيد</span></button>
+<div class="card standalone-entry-card" style="grid-column:1/-1;width:100%">
+<strong>مبلغ وملاحظة مستقلة</strong>
+<small>للتسجيل فقط — لا تؤثر على الرصيد أو التحصيل أو المصروفات أو أي حسابات.</small>
+<div class="standalone-entry-fields">
+<label>المبلغ (جنيه)<input id="standaloneEntryAmount" type="number" min="0" step="0.01" placeholder="اكتب المبلغ"></label>
+<label>الملاحظة<input id="standaloneEntryNote" type="text" maxlength="300" placeholder="اكتب الملاحظة"></label>
+<button type="button" class="primary" id="saveStandaloneEntry">حفظ</button>
+</div>
+<div id="standaloneEntrySaved" class="standalone-entry-saved">لا يوجد مبلغ مسجل</div>
+</div>
 </div>
 
 <nav class="main-nav" aria-label="القائمة الرئيسية">
@@ -550,11 +569,11 @@ async function initCloudAuth(){
 
 }
 const KEY='buildingAccountsV1';
-const defaultData={apartments:[],charges:[],payments:[],expenses:[],carryForward:0,extraAdd:0,extraDeduct:0};
+const defaultData={apartments:[],charges:[],payments:[],expenses:[],carryForward:0,extraAdd:0,extraDeduct:0,standaloneEntry:null};
 let db=load(),currentApt=null,selectedManagePaymentMonth="";
 
 function freshData(){
-const d={apartments:[],charges:[],payments:[],expenses:[],carryForward:0,extraAdd:0,extraDeduct:0,extraDeductions:[]};
+const d={apartments:[],charges:[],payments:[],expenses:[],carryForward:0,extraAdd:0,extraDeduct:0,extraDeductions:[],standaloneEntry:null};
 for(let f=1;f<=7;f++)for(let n=1;n<=3;n++)d.apartments.push({id:`${f}-${n}`,floor:f,num:n,name:'',phone:''});
 return d;
 }
@@ -650,6 +669,7 @@ db.extraDeduct=deductionsTotal;
 document.getElementById('sExtraDeduct').textContent=money(deductionsTotal);
 document.getElementById('sBalance').textContent=money((Number(db.carryForward)||0)+totalPaid+(Number(db.extraAdd)||0)-deductionsTotal-exp)+' ج.م';
 renderExtraDeductions();
+renderStandaloneEntry();
 
 const classified=db.apartments.map(a=>{
   const due=dueFor(a.id,m),paid=paidFor(a.id,m),rem=Math.max(0,due-paid);
@@ -711,6 +731,14 @@ function renderExpenses(){
  const expenses=db.expenses.filter(e=>(e.date||'').slice(0,7)===selected).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
  document.getElementById('expenseMonthTotal').textContent=money(expenses.reduce((sum,e)=>sum+(Number(e.amount)||0),0))+' جنيه';
  document.getElementById('expBody').innerHTML=expenses.map(e=>`<tr><td>${esc(e.date||'')}</td><td>${esc(e.type||'')}</td><td>${esc(e.note||'—')}</td><td>${money(e.amount)}</td><td><button class="small" onclick="editExpense('${e.id}')">تعديل</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد مصروفات لهذا الشهر</td></tr>';
+}
+function renderStandaloneEntry(){
+ const entry=db.standaloneEntry;
+ document.getElementById('standaloneEntryAmount').value=entry&&Number(entry.amount)>0?entry.amount:'';
+ document.getElementById('standaloneEntryNote').value=entry&&entry.note?entry.note:'';
+ document.getElementById('standaloneEntrySaved').textContent=entry&&Number(entry.amount)>0
+  ? 'المبلغ المسجل: '+money(entry.amount)+' جنيه — الملاحظة: '+(entry.note||'بدون ملاحظة')+(entry.date?' — التاريخ: '+entry.date:'')
+  : 'لا يوجد مبلغ مسجل';
 }
 function renderExtraDeductions(){
  const rows=db.extraDeductions||[];
@@ -892,6 +920,16 @@ alert(n?`تم إنشاء مستحقات ${m} لعدد ${n} شقة`:'مستحقا
 document.getElementById('month').onchange=render;
 document.getElementById('expDate').value=localDate();
 document.getElementById('expenseMonth').onchange=renderExpenses;
+
+document.getElementById('saveStandaloneEntry').onclick=()=>{
+ const raw=document.getElementById('standaloneEntryAmount').value.trim();
+ const amount=Number(raw),note=document.getElementById('standaloneEntryNote').value.trim();
+ if(!raw||!(amount>0)){alert('أدخل مبلغاً أكبر من صفر');return}
+ if(!note){alert('اكتب الملاحظة');return}
+ db.standaloneEntry={amount,note,date:localDate()};
+ save();
+ alert('تم حفظ المبلغ والملاحظة بشكل مستقل، دون التأثير على الحسابات.');
+};
 document.getElementById("openExtraDeductModal").onclick=()=>document.getElementById("extraDeductModal").classList.add("open");
 document.getElementById("closeExtraDeductModal").onclick=()=>document.getElementById("extraDeductModal").classList.remove("open");
 document.getElementById("addExtraDeduct").onclick=()=>{
