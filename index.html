@@ -758,9 +758,9 @@ function renderExpenses(){
  document.getElementById('expenseMonthTotal').textContent=money(expenses.reduce((sum,e)=>sum+(Number(e.amount)||0),0))+' جنيه';
  document.getElementById('expBody').innerHTML=expenses.map(e=>`<tr><td>${esc(e.date||'')}</td><td>${esc(e.type||'')}</td><td>${esc(e.note||'—')}</td><td>${money(e.amount)}</td><td><button class="small" onclick="editExpense('${e.id}')">تعديل</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد مصروفات لهذا الشهر</td></tr>';
 }
-function sendMonthlyExpenseWhatsApp(){
- const selected=document.getElementById('expenseMonth').value;
- if(ryAmount').value=entry&&Number(entry.amount)>0?entry.amount:'';
+function renderStandaloneEntry(){
+ const entry=db.standaloneEntry;
+ document.getElementById('standaloneEntryAmount').value=entry&&Number(entry.amount)>0?entry.amount:'';
  document.getElementById('standaloneEntryNote').value=entry&&entry.note?entry.note:'';
  document.getElementById('standaloneEntrySaved').textContent=entry&&Number(entry.amount)>0
   ? 'المبلغ المسجل: '+money(entry.amount)+' جنيه — الملاحظة: '+(entry.note||'بدون ملاحظة')+(entry.date?' — التاريخ: '+entry.date:'')
