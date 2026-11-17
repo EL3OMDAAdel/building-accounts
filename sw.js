@@ -1,5 +1,5 @@
-const CACHE_NAME = 'building-accounts-v46';
-const FILES = ['./', './index.html', './manifest.json', './icons/icon-192.png', './icons/icon-512.png'];
+const CACHE_NAME = 'building-accounts-v47';
+const FILES = ['./', './index.html', './manifest.json', './icons/icon-accounting1.svg'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(FILES)));
