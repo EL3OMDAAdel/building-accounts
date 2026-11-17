@@ -1,4 +1,4 @@
-const CACHE_NAME = 'building-accounts-v48';
+const CACHE_NAME = 'building-accounts-v49';
 const FILES = ['./', './index.html', './manifest.json', './icons/icon-accounting1.svg'];
 
 self.addEventListener('install', event => {
@@ -17,6 +17,9 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
+  // Leave the separate Account 1 app path to its own service worker.
+  const account1Path = new URL('./account1/', self.registration.scope).pathname;
+  if (new URL(event.request.url).pathname.startsWith(account1Path)) return;
 
   if (event.request.mode === 'navigate') {
     event.respondWith(
