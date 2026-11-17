@@ -1,11 +1,11 @@
 {
-  "id": "./",
+  "id": "./?app=accounting1-install-v2",
   "name": "حسابات 1",
   "short_name": "حسابات 1",
   "description": "إدارة اشتراكات السكان والتحصيل والمصروفات والمديونيات",
   "lang": "ar",
   "dir": "rtl",
-  "start_url": "./",
+  "start_url": "./?app=accounting1-install-v2",
   "scope": "./",
   "display": "standalone",
   "background_color": "#111827",
