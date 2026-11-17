@@ -769,7 +769,7 @@ function sendMonthlyExpenseWhatsApp(){
  const lines=['🏢 *تقرير مصروفات العمارة*','📅 *'+monthLabel+'*',''];
  rows.forEach((e,i)=>lines.push((i+1)+') '+(e.date||'')+' — '+(e.type||'مصروف')+(e.note?' — '+e.note:'')+' : *'+money(e.amount)+' جنيه*'));
  lines.push('','━━━━━━━━━━━━','💰 *إجمالي مصروفات الشهر: '+money(total)+' جنيه*');
- window.open('https://wa.me/?text='+encodeURIComponent(lines.join('\\n')),'_blank','noopener');
+ window.open('https://wa.me/?text='+encodeURIComponent(lines.join('\n')),'_blank','noopener');
 }
 function renderStandaloneEntry(){
  const entry=db.standaloneEntry;
