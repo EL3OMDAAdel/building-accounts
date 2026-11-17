@@ -1,11 +1,11 @@
 {
-  "id": "./",
-  "name": "حسابات العمارة",
-  "short_name": "حسابات العمارة",
+  "id": "./?app=account1-v2",
+  "name": "حسابات 1",
+  "short_name": "حسابات 1",
   "description": "إدارة اشتراكات السكان والتحصيل والمصروفات والمديونيات",
   "lang": "ar",
   "dir": "rtl",
-  "start_url": "./",
+  "start_url": "./?app=account1-v2",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f3f6f5",
@@ -13,7 +13,7 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "./icons/icon-accounting1.svg",
+      "src": "./icons/icon-accounting1.svg?v=2",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
