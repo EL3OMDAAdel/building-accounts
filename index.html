@@ -1048,7 +1048,8 @@ document.getElementById("addExtraDeduct").onclick=()=>{
  db.extraDeduct=db.extraDeductions.reduce((s,x)=>s+(Number(x.amount)||0),0);
  document.getElementById("extraDeductAmount").value="";document.getElementById("extraDeductNote").value="";save();
 };
-document.getElementById('monthlyExpenseWhatsApp').onclick=sendMonthlyExpenseWhatsApp;\ndocument.getElementById('expenseMonth').onchange=renderExpenses;\ndocument.getElementById('addExpense').onclick=()=>{
+document.getElementById('monthlyExpenseWhatsApp').onclick=sendMonthlyExpenseWhatsApp;
+document.getElementById('expenseMonth').onchange=renderExpenses;\ndocument.getElementById('addExpense').onclick=()=>{
 const date=document.getElementById('expDate').value,amount=Number(document.getElementById('expAmount').value);
 if(!date||!(amount>0)){alert('أدخل التاريخ والمبلغ');return}
 db.expenses.push({id:makeId(),date,amount,type:document.getElementById('expType').value,note:document.getElementById('expNote').value});
