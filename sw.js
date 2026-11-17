@@ -1,4 +1,4 @@
-const CACHE_NAME = 'building-accounts-v50';
+const CACHE_NAME = 'building-accounts-v51';
 const FILES = ['./', './index.html', './manifest.json', './icons/icon-accounting1.svg'];
 
 self.addEventListener('install', event => {
