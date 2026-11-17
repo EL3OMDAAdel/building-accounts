@@ -363,7 +363,7 @@ table tbody tr[style*="background"] td button,
 </section>
 <section id="apartments"><div class="card"><h3>بيانات الشقق</h3><p class="muted">21 شقة موزعة على 7 أدوار، ويمكن إضافة اسم المالك أو الساكن ورقم الهاتف.</p><div class="table-wrap"><table><thead><tr><th>اسم صاحب الشقة</th><th>الاشتراك الشهري</th><th>تعديل الاسم</th><th>رقم الهاتف</th><th>إجراء</th></tr></thead><tbody id="aptBody"></tbody></table></div></div></section>
 <section id="aptPage"><div class="toolbar"><button id="backToApartments">← العودة إلى الشقق</button><button class="primary" id="aptPagePay">تسجيل دفعة لهذه الشقة</button><button type="button" class="apt-debt-whatsapp" id="aptPageDebtWhatsApp">📲 إرسال المديونية على واتساب</button></div><div class="card"><h2 id="aptPageTitle">حساب الشقة</h2><p class="muted" id="aptPageContact"></p><div class="field" style="margin:12px 0"><label for="aptPageNotes">ملاحظات خاصة بالشقة</label><textarea id="aptPageNotes" rows="4" placeholder="اكتب أي ملاحظات تخص الشقة هنا..."></textarea></div><div class="stats"><div class="card stat"><small>إجمالي المستحق</small><strong id="aptTotalDue">0</strong></div><div class="card stat"><small>إجمالي المدفوع</small><strong id="aptTotalPaid">0</strong></div><div class="card stat"><small>المتبقي</small><strong id="aptTotalDebt">0</strong></div></div></div><div class="card" style="margin-top:14px"><h3>كشف الاشتراكات شهر بشهر</h3><div class="table-wrap"><table><thead><tr><th>الشهر</th><th>الاشتراك</th><th>المدفوع</th><th>المتبقي</th><th>الحالة</th></tr></thead><tbody id="aptPageMonths"></tbody></table></div></div><div class="card" style="margin-top:14px"><h3>سجل دفعات الشقة</h3><div class="table-wrap"><table><thead><tr><th>تاريخ الدفع</th><th>الشهر المحتسب</th><th>المبلغ</th><th>ملاحظات</th><th>الإيصال</th></tr></thead><tbody id="aptPagePayments"></tbody></table></div></div></section>
-<section id="expenses"><div class="card"><h3>تسجيل مصروف جديد</h3><div class="toolbar"><div class="field"><label>التاريخ</label><input type="date" id="expDate"></div><div class="field"><label>نوع المصروف</label><select id="expType"><option>كهرباء</option><option>أسانسير</option><option>نظافة</option><option>صيانة</option><option>مياه</option><option>أخرى</option></select></div><div class="field"><label>المبلغ بالجنيه</label><input type="number" id="expAmount" min="0.01" step="0.01" placeholder="المبلغ"></div><div class="field"><label>البيان</label><input id="expNote" placeholder="تفاصيل المصروف"></div><button class="primary" id="addExpense">حفظ المصروف</button></div></div><div class="card" style="margin-top:14px"><h3>مصروفات كل شهر</h3><div class="toolbar"><div class="field"><label for="expenseMonth">اختر الشهر</label><select id="expenseMonth"></select></div><div class="field"><label>إجمالي مصروفات الشهر</label><strong id="expenseMonthTotal">0 جنيه</strong></div></div><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>النوع</th><th>البيان</th><th>المبلغ</th><th>إجراء</th></tr></thead><tbody id="expBody"></tbody></table></div></div></section>
+<section id="expenses"><div class="card"><h3>تسجيل مصروف جديد</h3><div class="toolbar"><div class="field"><label>التاريخ</label><input type="date" id="expDate"></div><div class="field"><label>نوع المصروف</label><select id="expType"><option>كهرباء</option><option>أسانسير</option><option>نظافة</option><option>صيانة</option><option>مياه</option><option>أخرى</option></select></div><div class="field"><label>المبلغ بالجنيه</label><input type="number" id="expAmount" min="0.01" step="0.01" placeholder="المبلغ"></div><div class="field"><label>البيان</label><input id="expNote" placeholder="تفاصيل المصروف"></div><button class="primary" id="addExpense">حفظ المصروف</button></div></div><div class="card" style="margin-top:14px"><h3>مصروفات كل شهر</h3><div class="toolbar"><div class="field"><label for="expenseMonth">اختر الشهر</label><select id="expenseMonth"></select></div><div class="field"><label>إجمالي مصروفات الشهر</label><strong id="expenseMonthTotal">0 جنيه</strong></div><button type="button" class="primary" id="shareMonthlyExpenses">📲 إرسال تقرير الشهر على واتساب</button></div><div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>النوع</th><th>البيان</th><th>المبلغ</th><th>إجراء</th></tr></thead><tbody id="expBody"></tbody></table></div></div></section>
 <section id="reports">
 <div class="grid2">
   <div class="card"><h3>ملخص الحسابات</h3><p>إجمالي التحصيل: <b id="rPaid">0</b> ج.م</p><p>إجمالي المصروفات: <b id="rExp">0</b> ج.م</p><p>المرحل من السنة الماضية: <b id="rCarryForward">0</b> ج.م</p><p>إضافات أخرى: <b id="rExtraAdd">0</b> ج.م</p><p>خصومات أخرى: <b id="rExtraDeduct">0</b> ج.م</p><p>صافي الرصيد بعد الإضافات والخصومات والمصروفات: <b id="rBalance">0</b> ج.م</p><p>إجمالي المديونيات: <b id="rDebt">0</b> ج.م</p></div>
@@ -758,6 +758,28 @@ function renderExpenses(){
  document.getElementById('expenseMonthTotal').textContent=money(expenses.reduce((sum,e)=>sum+(Number(e.amount)||0),0))+' جنيه';
  document.getElementById('expBody').innerHTML=expenses.map(e=>`<tr><td>${esc(e.date||'')}</td><td>${esc(e.type||'')}</td><td>${esc(e.note||'—')}</td><td>${money(e.amount)}</td><td><button class="small" onclick="editExpense('${e.id}')">تعديل</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">لا توجد مصروفات لهذا الشهر</td></tr>';
 }
+
+function sendMonthlyExpenseReportWhatsApp(){
+ const month=document.getElementById('expenseMonth').value;
+ if(!month){alert('اختر الشهر أولاً');return}
+ const [year,monthNo]=month.split('-');
+ const monthNames=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+ const title='تقرير مصروفات العمارة — '+(monthNames[Number(monthNo)-1]||monthNo)+' '+year;
+ const rows=db.expenses.filter(e=>(e.date||'').slice(0,7)===month).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+ const total=rows.reduce((sum,e)=>sum+(Number(e.amount)||0),0);
+ const lines=[title,''];
+ if(!rows.length) lines.push('لا توجد مصروفات مسجلة لهذا الشهر.');
+ else rows.forEach((e,i)=>{
+  lines.push((i+1)+') التاريخ: '+(e.date||'غير محدد'));
+  lines.push('النوع: '+(e.type||'—'));
+  lines.push('البيان: '+(e.note||'—'));
+  lines.push('المبلغ: '+money(e.amount)+' جنيه','');
+ });
+ lines.push('إجمالي مصروفات الشهر: '+money(total)+' جنيه');
+ const url='https://wa.me/?text='+encodeURIComponent(lines.join('\\n'));
+ window.open(url,'_blank','noopener');
+}
+
 function renderStandaloneEntry(){
  const entry=db.standaloneEntry;
  document.getElementById('standaloneEntryAmount').value=entry&&Number(entry.amount)>0?entry.amount:'';
@@ -1014,6 +1036,7 @@ alert(n?`تم إنشاء مستحقات ${m} لعدد ${n} شقة`:'مستحقا
 document.getElementById('month').onchange=render;
 document.getElementById('expDate').value=localDate();
 document.getElementById('expenseMonth').onchange=renderExpenses;
+document.getElementById('shareMonthlyExpenses').onclick=sendMonthlyExpenseReportWhatsApp;
 
 document.getElementById('saveStandaloneEntry').onclick=()=>{
  const raw=document.getElementById('standaloneEntryAmount').value.trim();
