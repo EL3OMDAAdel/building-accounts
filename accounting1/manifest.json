@@ -1,0 +1,22 @@
+{
+  "id": "./?install=accounting1-new",
+  "name": "حسابات 1",
+  "short_name": "حسابات 1",
+  "description": "إدارة اشتراكات السكان والتحصيل والمصروفات والمديونيات",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./?install=accounting1-new",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#173b35",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "../icons/icon-accounting1.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
